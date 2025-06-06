@@ -50,4 +50,36 @@ const logoutAdmin = async (req, res) => {
     }
 };
 
-export { createAdmin, loginAdmin, logoutAdmin };
+// Update admin profile
+const updateAdminProfile = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { name, bio, avatar } = req.body;
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { name, bio, avatar },
+            { new: true }
+        );
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json(updatedUser);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+};
+
+// Get user by ID
+const getUserById = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json(user);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+};
+
+export { createAdmin, loginAdmin, logoutAdmin, updateAdminProfile, getUserById };

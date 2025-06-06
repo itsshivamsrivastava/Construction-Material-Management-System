@@ -1,0 +1,19 @@
+/* Make mobile navbar menu scrollable if content overflows */
+@media (max-width: 1024px) {
+  .mobile-navbar-scroll {
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .mobile-navbar-scroll::-webkit-scrollbar {
+    width: 8px;
+    background: #f1f5f9;
+  }
+  .mobile-navbar-scroll::-webkit-scrollbar-thumb {
+    background: #64748b;
+    border-radius: 8px;
+  }
+}
+
+.profile{
+  margin-right: -4rem;
+}
