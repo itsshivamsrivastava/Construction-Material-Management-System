@@ -1,19 +1,10 @@
 import React, { useEffect, useState } from "react";
-import './Companies.css';
+import "./Companies.css";
+import Sidebar from "../Sidebar/Sidebar";
 
 const API_BASE = "http://localhost:3000/api/company";
 
-const initialForm = { name: "", gstNumber: "", location: "" };
-
-const modules = [
-  { name: 'Companies', path: '/companies' },
-  { name: 'Work Orders', path: '/work-orders' },
-  { name: 'Contractor Bills', path: '/contractor-bills' },
-  { name: 'Materials', path: '/materials' },
-  { name: 'PO Consumables', path: '/po-consumables' },
-  { name: 'Purchase Orders', path: '/purchase-orders' },
-  { name: 'RA Bill Entry', path: '/ra-bills' },
-];
+const initialForm = { name: "", gstNumber: "", address: "" };
 
 export default function Companies() {
   const [companies, setCompanies] = useState([]);
@@ -22,14 +13,8 @@ export default function Companies() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 10;
-
-  // For navigation
-  const handleModuleClick = (path) => {
-    window.location.href = path;
-  };
+  const recordsPerPage = 5;
 
   // Fetch companies
   const fetchCompanies = async () => {
@@ -95,7 +80,7 @@ export default function Companies() {
     setForm({
       name: company.name,
       gstNumber: company.gstNumber,
-      location: company.location,
+      address: company.address,
     });
     setEditingId(company._id);
     setSuccess("");
@@ -104,7 +89,8 @@ export default function Companies() {
 
   // Handle delete
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this company?")) return;
+    if (!window.confirm("Are you sure you want to delete this company?"))
+      return;
     setLoading(true);
     setError("");
     setSuccess("");
@@ -129,13 +115,6 @@ export default function Companies() {
     setSuccess("");
   };
 
-  // Close sidebar on overlay click (mobile)
-  const handleOverlayClick = (e) => {
-    if (e.target.classList.contains('companies-sidebar-overlay')) {
-      setSidebarOpen(false);
-    }
-  };
-
   // Pagination logic
   const totalPages = Math.ceil(companies.length / recordsPerPage);
   const paginatedCompanies = companies.slice(
@@ -145,70 +124,18 @@ export default function Companies() {
 
   return (
     <div className="companies-page-container flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      {/* Hamburger for mobile, placed inside content flow */}
-      <div className="mt-20 md:hidden w-full flex items-start">
-        <button
-          className="sidebar-hamburger mt-4 ml-2 z-50 bg-white text-blue-700 p-2 rounded-full shadow-md border border-blue-200 hover:bg-blue-50 hover:text-blue-900 transition focus:outline-none"
-          onClick={() => setSidebarOpen(true)}
-          aria-label="Open sidebar"
-        >
-          <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
-      {/* Sidebar overlay for mobile */}
-      {sidebarOpen && (
-        <div className="companies-sidebar-overlay fixed inset-0 bg-black bg-opacity-40 z-40" onClick={handleOverlayClick}>
-          <aside className="companies-sidebar mobile-open animate-slide-in-left">
-            <button
-              className="sidebar-close absolute top-4 right-4 text-2xl text-blue-700 bg-white rounded-full p-1 shadow focus:outline-none"
-              onClick={() => setSidebarOpen(false)}
-              aria-label="Close sidebar"
-            >
-              ×
-            </button>
-            <nav>
-              <ul className="space-y-2 mt-10">
-                {modules.map((mod) => (
-                  <li key={mod.path}>
-                    <button
-                      className={`sidebar-link w-full text-left px-4 py-3 rounded-lg font-semibold text-blue-700 hover:bg-blue-100 hover:text-blue-900 transition ${window.location.pathname === mod.path ? 'bg-blue-100 text-blue-900 font-bold shadow' : ''}`}
-                      onClick={() => handleModuleClick(mod.path)}
-                      aria-current={window.location.pathname === mod.path ? 'page' : undefined}
-                    >
-                      {mod.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </aside>
-        </div>
-      )}
-      {/* Sidebar for desktop */}
-      <aside className="companies-sidebar-lg-screen companies-sidebar hidden md:block w-64 bg-white/90 border-r border-blue-100 shadow-lg py-8 px-4 flex-shrink-0 sticky top-0 z-10">
-        <nav>
-          <ul className="space-y-2">
-            {modules.map((mod) => (
-              <li key={mod.path}>
-                <button
-                  className={`sidebar-link w-full text-left px-4 py-3 rounded-lg font-semibold text-blue-700 hover:bg-blue-100 hover:text-blue-900 transition ${window.location.pathname === mod.path ? 'bg-blue-100 text-blue-900 font-bold shadow' : ''}`}
-                  onClick={() => handleModuleClick(mod.path)}
-                  aria-current={window.location.pathname === mod.path ? 'page' : undefined}
-                >
-                  {mod.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </aside>
+      {/* Sidebar */}
+      <Sidebar title="Company Dashboard" />
+
       {/* Main Content */}
       <main className="companies-main flex-1 px-2 sm:px-4 md:px-8 py-6">
-        <div className="mb-8 mt-20 text-center main-container">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-blue-700 mb-2 drop-shadow-lg">Company Management</h2>
-          <p className="text-gray-500 text-base md:text-lg">Add, view, and manage all your companies easily.</p>
+        <div className="mb-8 mt-10 text-center main-container">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-blue-700 mb-2 drop-shadow-lg">
+            Company Management
+          </h2>
+          <p className="text-gray-500 text-base md:text-lg">
+            Add, view, and manage all your companies easily.
+          </p>
         </div>
         <form
           onSubmit={handleSubmit}
@@ -234,10 +161,10 @@ export default function Companies() {
           />
           <input
             type="text"
-            name="location"
-            value={form.location}
+            name="address"
+            value={form.address}
             onChange={handleChange}
-            placeholder="Location"
+            placeholder="Address"
             className="w-full md:w-1/4 px-4 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition placeholder-gray-400 text-gray-700 shadow-sm"
             required
           />
@@ -261,33 +188,62 @@ export default function Companies() {
             )}
           </div>
         </form>
-        {error && <div className="text-red-600 mb-4 text-center font-medium animate-pulse">{error}</div>}
-        {success && <div className="text-green-600 mb-4 text-center font-medium animate-pulse">{success}</div>}
+        {error && (
+          <div className="text-red-600 mb-4 text-center font-medium animate-pulse">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="text-green-600 mb-4 text-center font-medium animate-pulse">
+            {success}
+          </div>
+        )}
         <div className="companies-table-wrapper overflow-x-auto rounded-2xl shadow-lg bg-white/90 border border-blue-100">
           <table className="companies-table w-full divide-y divide-blue-200">
             <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
               <tr>
-                <th className="py-3 px-4 text-left font-semibold tracking-wide">Name</th>
-                <th className="py-3 px-4 text-left font-semibold tracking-wide">GST Number</th>
-                <th className="py-3 px-4 text-left font-semibold tracking-wide">Location</th>
-                <th className="py-3 px-4 text-center font-semibold tracking-wide">Actions</th>
+                <th className="py-3 px-4 text-left font-semibold tracking-wide">
+                  Name
+                </th>
+                <th className="py-3 px-4 text-left font-semibold tracking-wide">
+                  GST Number
+                </th>
+                <th className="py-3 px-4 text-left font-semibold tracking-wide">
+                  Address
+                </th>
+                <th className="py-3 px-4 text-center font-semibold tracking-wide">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-blue-100">
               {loading ? (
                 <tr>
-                  <td colSpan="4" className="text-center py-8 text-blue-500 font-semibold animate-pulse">Loading...</td>
+                  <td
+                    colSpan="4"
+                    className="text-center py-8 text-blue-500 font-semibold animate-pulse"
+                  >
+                    Loading...
+                  </td>
                 </tr>
               ) : companies.length === 0 ? (
                 <tr>
-                  <td colSpan="4" className="text-center py-8 text-gray-400">No companies found.</td>
+                  <td colSpan="4" className="text-center py-8 text-gray-400">
+                    No companies found.
+                  </td>
                 </tr>
               ) : (
                 paginatedCompanies.map((company) => (
                   <tr key={company._id} className="hover:bg-blue-50 transition">
-                    <td className="py-3 px-4 text-gray-800 font-medium">{company.name}</td>
-                    <td className="py-3 px-4 text-gray-700">{company.gstNumber}</td>
-                    <td className="py-3 px-4 text-gray-700">{company.location}</td>
+                    <td className="py-3 px-4 text-gray-800 font-medium">
+                      {company.name}
+                    </td>
+                    <td className="py-3 px-4 text-gray-700">
+                      {company.gstNumber}
+                    </td>
+                    <td className="py-3 px-4 text-gray-700">
+                      {company.address}
+                    </td>
                     <td className="py-3 px-4 text-center flex flex-col sm:flex-row gap-2 justify-center items-center">
                       <button
                         onClick={() => handleEdit(company)}
@@ -319,18 +275,26 @@ export default function Companies() {
               >
                 Prev
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  className={`px-3 py-1 rounded font-semibold border transition ${currentPage === page ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-700 border-blue-200 hover:bg-blue-100'}`}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </button>
-              ))}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    className={`px-3 py-1 rounded font-semibold border transition ${
+                      currentPage === page
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-blue-700 border-blue-200 hover:bg-blue-100"
+                    }`}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
               <button
                 className="px-3 py-1 rounded bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 disabled:opacity-50"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
                 disabled={currentPage === totalPages}
               >
                 Next

@@ -13,7 +13,7 @@ const WorkOrderSchema = new mongoose.Schema({
     type: String,
   },
   woNumber: {
-    type: Number,
+    type: String,
     unique: true,
     required: true,
   },
@@ -26,7 +26,7 @@ const WorkOrderSchema = new mongoose.Schema({
     required: true,
   },
   boqNumber: {
-    type: Number,
+    type: String,
     required: true,
     unique: true,
   },

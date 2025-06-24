@@ -2,18 +2,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import './WorkorderStyle.css';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+import Sidebar from "../Sidebar/Sidebar";
 
-const modules = [
-  { name: 'Companies', path: '/companies' },
-  { name: 'Work Orders', path: '/work-orders' },
-  { name: 'Contractor Bills', path: '/contractor-bills' },
-  { name: 'Materials', path: '/materials' },
-  { name: 'PO Consumables', path: '/po-consumables' },
-  { name: 'Purchase Orders', path: '/purchase-orders' },
-  { name: 'RA Bill Entry', path: '/ra-bills' },
-];
-
-export default function WorkOrder() {
+const WorkOrder = () => {
   const initialFormData = {
     clientName: "",
     clientNickName: "",
@@ -33,7 +24,7 @@ export default function WorkOrder() {
     pbgDuration: "",
   };
   const [formData, setFormData] = useState(initialFormData);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // const [sidebarOpen, setSidebarOpen] = useState(false);
   const [workOrders, setWorkOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -111,27 +102,17 @@ export default function WorkOrder() {
         setEditingId(null);
       } else {
         await axios.post("http://localhost:3000/api/workorder/add", formData);
-        alert("Work Order Added Successfully");
+      alert("Work Order Added Successfully");
       }
       setFormData(initialFormData); // Reset form after submit
       fetchWorkOrders(); // Refresh work orders list
     } catch (err) {
-      console.error('Error:', err.response?.data || err.message);
-      alert(err.response?.data?.message || "Something went wrong");
-    }
+        console.error('Error:', err.response?.data || err.message);
+        alert(err.response?.data?.message || "Something went wrong");
+      }
   };
 
-  // For navigation
-  const handleModuleClick = (path) => {
-    window.location.href = path;
-  };
-
-  // Close sidebar on overlay click (mobile)
-  const handleOverlayClick = (e) => {
-    if (e.target.classList.contains('companies-sidebar-overlay')) {
-      setSidebarOpen(false);
-    }
-  };
+  
 
   // Pagination logic
   const totalPages = Math.ceil(workOrders.length / recordsPerPage);
@@ -141,69 +122,14 @@ export default function WorkOrder() {
   );
 
   return (
-    <div className="companies-page-container flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      {/* Hamburger for mobile */}
-      <div className="mt-20 md:hidden w-full flex items-start">
-        <button
-          className="sidebar-hamburger mt-4 ml-2 z-50 bg-white text-blue-700 p-2 rounded-full shadow-md border border-blue-200 hover:bg-blue-50 hover:text-blue-900 transition focus:outline-none"
-          onClick={() => setSidebarOpen(true)}
-          aria-label="Open sidebar"
-        >
-          <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
-      {/* Sidebar overlay for mobile */}
-      {sidebarOpen && (
-        <div className="companies-sidebar-overlay fixed inset-0 bg-black bg-opacity-40 z-40" onClick={handleOverlayClick}>
-          <aside className="companies-sidebar mobile-open animate-slide-in-left">
-            <button
-              className="sidebar-close absolute top-4 right-4 text-2xl text-blue-700 bg-white rounded-full p-1 shadow focus:outline-none"
-              onClick={() => setSidebarOpen(false)}
-              aria-label="Close sidebar"
-            >
-              ×
-            </button>
-            <nav>
-              <ul className="space-y-2 mt-10">
-                {modules.map((mod) => (
-                  <li key={mod.path}>
-                    <button
-                      className={`sidebar-link w-full text-left px-4 py-3 rounded-lg font-semibold text-blue-700 hover:bg-blue-100 hover:text-blue-900 transition ${window.location.pathname === mod.path ? 'bg-blue-100 text-blue-900 font-bold shadow' : ''}`}
-                      onClick={() => handleModuleClick(mod.path)}
-                      aria-current={window.location.pathname === mod.path ? 'page' : undefined}
-                    >
-                      {mod.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </aside>
-        </div>
-      )}
-      {/* Sidebar for desktop */}
-      <aside className="companies-sidebar-lg-screen companies-sidebar hidden md:block w-64 bg-white/90 border-r border-blue-100 shadow-lg py-8 px-4 flex-shrink-0 sticky top-0 z-10">
-        <nav>
-          <ul className="space-y-2">
-            {modules.map((mod) => (
-              <li key={mod.path}>
-                <button
-                  className={`sidebar-link w-full text-left px-4 py-3 rounded-lg font-semibold text-blue-700 hover:bg-blue-100 hover:text-blue-900 transition ${window.location.pathname === mod.path ? 'bg-blue-100 text-blue-900 font-bold shadow' : ''}`}
-                  onClick={() => handleModuleClick(mod.path)}
-                  aria-current={window.location.pathname === mod.path ? 'page' : undefined}
-                >
-                  {mod.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </aside>
+    <div className="workorder-page-container flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+
+      {/* Sidebar */}
+      <Sidebar title="Workorder Dashboard" />
+      
       {/* Main Content */}
-      <main className="companies-main flex-1 px-2 sm:px-4 md:px-8 py-6">
-        <div className="mb-8 mt-20 text-center main-container">
+      <main className="workorder-main flex-1 px-2 sm:px-4 md:px-8 py-6">
+        <div className="mb-8 mt-10 text-center main-container">
           <h2 className="text-3xl md:text-4xl font-extrabold text-blue-700 mb-2 drop-shadow-lg">Create Work Order</h2>
           <p className="text-gray-500 text-base md:text-lg">Fill in the details below to add a new work order.</p>
         </div>
@@ -247,8 +173,8 @@ export default function WorkOrder() {
           </div>
           <div className="w-full mt-6">
             <div className="flex flex-col md:flex-row gap-4 w-full">
-              <button
-                type="submit"
+          <button
+            type="submit"
                 className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-2 rounded-lg font-semibold shadow-md hover:from-blue-600 hover:to-blue-800 transition disabled:opacity-60"
               >
                 {editingId ? 'Update Work Order' : 'Submit Work Order'}
@@ -266,7 +192,7 @@ export default function WorkOrder() {
           </div>
         </form>
         {/* Work Orders Table */}
-        <div className="companies-table-wrapper overflow-x-auto rounded-2xl shadow-lg bg-white/90 border border-blue-100 mt-8">
+        <div className="workorder-table-wrapper overflow-x-auto rounded-2xl shadow-lg bg-white/90 border border-blue-100 mt-8">
           <h3 className="text-2xl font-bold text-blue-700 mb-4 text-center pt-6">All Work Orders</h3>
           {loading ? (
             <div className="text-blue-500 text-center py-8 font-semibold animate-pulse">Loading...</div>
@@ -276,7 +202,7 @@ export default function WorkOrder() {
             <div className="text-gray-400 text-center py-8">No work orders found.</div>
           ) : (
             <>
-              <table className="companies-table w-full divide-y divide-blue-200">
+              <table className="workorder-table w-full divide-y divide-blue-200">
                 <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
                   <tr>
                     <th>Actions</th>
@@ -347,7 +273,7 @@ export default function WorkOrder() {
                   disabled={currentPage === totalPages}
                 >
                   Next
-                </button>
+          </button>
               </div>
             </>
           )}
@@ -356,3 +282,5 @@ export default function WorkOrder() {
     </div>
   );
 }
+
+export default WorkOrder;

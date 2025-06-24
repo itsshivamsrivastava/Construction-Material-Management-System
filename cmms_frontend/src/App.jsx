@@ -6,12 +6,14 @@ import Dashboard from './Components/Dashboard/Dashboard';
 import Companies from './Components/Companies/Companies';
 import AdminProfile from './Components/AdminProfile/AdminProfile';
 import WorkOrder from './Components/Workorder/Workorder';
+import ContractorBills from './Components/ContractorBills/ContractorBills';
+
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   if (!token) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/signin" replace />;
   }
   return children;
 };
@@ -21,6 +23,7 @@ function App() {
     <BrowserRouter>
       <NavBar />
       <Routes>
+        <Route path='/' element={<UserLogin />} />
         <Route path="/signin" element={<UserLogin />} />
         <Route path="/signup" element={<UserLogin />} />
         <Route
@@ -48,7 +51,16 @@ function App() {
           }
         />
 
-        <Route path='/work-orders' element={<ProtectedRoute> <WorkOrder /> </ProtectedRoute>} />
+        <Route 
+          path='/work-orders' 
+          element={
+            <ProtectedRoute>
+              <WorkOrder />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route path='/contractor-bills' element={<ProtectedRoute> <ContractorBills /> </ProtectedRoute>} />
         
         {/* Add other protected routes here */}
       </Routes>

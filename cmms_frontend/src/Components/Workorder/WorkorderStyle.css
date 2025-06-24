@@ -1,50 +1,15 @@
-/* Companies Page Custom Styles */
+/* Workorder Page Custom Styles */
 
-.companies-page-container {
+.workorder-page-container {
   /* fallback for browsers that don't support Tailwind's bg-gradient */
   background: linear-gradient(135deg, #eff6ff 0%, #fff 50%, #dbeafe 100%);
 }
 
-.companies-sidebar {
-  min-height: 100vh;
-  box-shadow: 0 2px 16px 0 rgba(30, 64, 175, 0.07);
-  border-radius: 0 1.5rem 1.5rem 0;
-  transition: box-shadow 0.2s;
-}
-.companies-sidebar-lg-screen{
-  margin-top: 5rem;
-}
-
-.sidebar-link {
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-  font-size: 1.08rem;
-  letter-spacing: 0.01em;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  box-shadow: none;
-}
-.sidebar-link[aria-current="page"] {
-  background: linear-gradient(90deg, #dbeafe 60%, #fff 100%);
-  color: #1e40af;
-  font-weight: 700;
-  box-shadow: 0 2px 8px 0 rgba(30, 64, 175, 0.08);
-}
-
-@media (max-width: 768px) {
-  .companies-sidebar {
-    min-height: auto;
-    border-radius: 0 0 1.5rem 1.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px 0 rgba(30, 64, 175, 0.07);
-  }
-}
-
-.companies-main {
+.workorder-main {
   min-width: 0;
 }
 
-.companies-table-wrapper {
+.workorder-table-wrapper {
   margin-top: 1.5rem;
   background: rgba(255,255,255,0.97);
   border-radius: 1.5rem;
@@ -52,7 +17,7 @@
   overflow-x: auto;
 }
 
-.companies-table {
+.workorder-table {
   border-collapse: separate;
   border-spacing: 0;
   min-width: 600px;
@@ -60,7 +25,7 @@
   background: transparent;
 }
 
-.companies-table th, .companies-table td {
+.workorder-table th, .workorder-table td {
   white-space: nowrap;
   padding-left: 1rem;
   padding-right: 1rem;
@@ -68,7 +33,7 @@
   padding-bottom: 0.75rem;
 }
 
-.companies-table th {
+.workorder-table th {
   font-size: 1.08rem;
   font-weight: 700;
   letter-spacing: 0.01em;
@@ -77,137 +42,68 @@
   border: none;
 }
 
-.companies-table td {
+.workorder-table td {
   background: transparent;
   border: none;
   color: #334155;
   font-weight: 500;
 }
 
-.companies-table tr {
+.workorder-table tr {
   transition: background 0.15s;
 }
 
-.companies-table tr:hover {
+.workorder-table tr:hover {
   background: #eff6ff;
 }
 
 @media (max-width: 640px) {
-  .companies-table {
+  .workorder-table {
     min-width: 480px;
     font-size: 0.97rem;
   }
-  .companies-table th, .companies-table td {
+  .workorder-table th, .workorder-table td {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
   }
-  .companies-main {
+  .workorder-main {
     padding-left: 0.2rem;
     padding-right: 0.2rem;
   }
 }
 
 @media (max-width: 480px) {
-  .companies-table {
+  .workorder-table {
     min-width: 340px;
     font-size: 0.93rem;
   }
-  .companies-table th, .companies-table td {
+  .workorder-table th, .workorder-table td {
     padding-left: 0.3rem;
     padding-right: 0.3rem;
   }
-  .companies-main {
+  .workorder-main {
     padding-left: 0.1rem;
     padding-right: 0.1rem;
   }
 }
 
 /* Subtle animation for table rows */
-.companies-table tr {
+.workorder-table tr {
   transition: background 0.18s, box-shadow 0.18s;
 }
-.companies-table tr:hover {
+.workorder-table tr:hover {
   box-shadow: 0 2px 8px 0 rgba(30, 64, 175, 0.08);
 }
 
 /* Responsive form tweaks */
 @media (max-width: 768px) {
-  .companies-main form {
+  .workorder-main form {
     flex-direction: column;
     gap: 0.75rem;
     padding: 1.2rem 0.5rem;
   }
 }
 
-/* Make sidebar sticky on desktop */
-@media (min-width: 768px) {
-  .companies-sidebar {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-  }
-}
-
-/* Hamburger button for mobile */
-.sidebar-hamburger {
-  display: block;
-}
-@media (min-width: 768px) {
-  .sidebar-hamburger {
-    display: none;
-  }
-}
-
-/* Sidebar overlay for mobile */
-.companies-sidebar-overlay {
-  display: flex;
-  align-items: stretch;
-  justify-content: flex-start;
-  z-index: 1000;
-}
-
-.companies-sidebar.mobile-open {
-  position: relative;
-  width: 80vw;
-  max-width: 320px;
-  min-width: 220px;
-  height: 100vh;
-  background: #fff;
-  box-shadow: 2px 0 16px 0 rgba(30, 64, 175, 0.13);
-  border-radius: 0 1.5rem 1.5rem 0;
-  animation: slide-in-left 0.25s cubic-bezier(.4,0,.2,1);
-  z-index: 1010;
-  overflow-y: auto;
-}
-
-.sidebar-close {
-  z-index: 1020;
-  border: none;
-  background: #fff;
-  transition: background 0.2s;
-  cursor: pointer;
-}
-.sidebar-close:hover {
-  background: #f1f5f9;
-}
-
-@keyframes slide-in-left {
-  0% {
-    transform: translateX(-100%);
-    opacity: 0.2;
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@media (min-width: 768px) {
-  .companies-sidebar-overlay,
-  .companies-sidebar.mobile-open {
-    display: none !important;
-  }
-}
 @media (min-width: 340px) and (max-width: 768px){
     .main-container{
         margin-top: 5px;

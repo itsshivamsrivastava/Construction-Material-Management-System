@@ -57,7 +57,7 @@ const NavBar = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsLoggedIn(false);
-    window.location.href = '/signin'; // or use navigate('/login') if using react-router
+    window.location.href = '/signin';
   };
 
   // Close dropdown on outside click
@@ -218,7 +218,7 @@ const NavBar = () => {
   );
 
   return (
-    <nav className={`fixed w-full ${click ? "z-50" : "z-40"}`}>
+    <nav className={`w-full ${click ? "z-50" : "z-40"}`}>
       <div className="h-10vh flex justify-between text-white bg-slate-900 lg:py-5 px-20 py-4">
         <div className="logo flex items-center flex-1">
           <span className="font-bold text-3xl">

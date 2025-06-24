@@ -5,7 +5,9 @@ const ContractorBillSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  workOrder: { type: mongoose.Schema.Types.ObjectId, ref: "WorkOrder" },
+  workOrder: {
+    type: mongoose.Schema.Types.ObjectId, ref: "WorkOrder"
+  },
   contractorName: {
     type: String,
     required: true,

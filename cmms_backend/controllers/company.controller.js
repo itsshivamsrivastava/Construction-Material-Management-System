@@ -5,7 +5,7 @@ const createCompany = async (req, res) => {
     const company = new Company({
         name: req.body.name,
         gstNumber: req.body.gstNumber,
-        location: req.body.location
+        address: req.body.address
     });
     try {
         const savedCompany = await company.save();

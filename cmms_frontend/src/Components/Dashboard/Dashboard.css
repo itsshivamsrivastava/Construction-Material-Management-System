@@ -1,5 +1,6 @@
 .dashboard-container {
   padding: 2rem;
+  padding-top: 4rem;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -69,6 +70,7 @@
 @media (max-width: 768px) {
   .dashboard-container {
     padding: 1rem;
+    padding-top: 5rem;
   }
 
   .dashboard-header h1 {
