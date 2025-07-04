@@ -6,6 +6,7 @@ import { companyRouter } from './routes/company.route.js';
 import { authRouter } from './routes/auth.route.js';
 import { workOrderRouter } from './routes/workorder.route.js';
 import { ContractorBillrouter } from './routes/contractorBill.route.js';
+import { boqRouter } from './routes/boq.route.js';
 
 dotenv.config();
 
@@ -29,3 +30,4 @@ app.use('/api/company', companyRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/workorder', workOrderRouter);
 app.use('/api/constractorBill', ContractorBillrouter);
+app.use('/api/boq', boqRouter);

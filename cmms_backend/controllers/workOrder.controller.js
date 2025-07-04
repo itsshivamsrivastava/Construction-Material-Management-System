@@ -10,11 +10,13 @@ const createWorkOrder = async (req, res) => {
             woDate: req.body.woDate,
             projectName: req.body.projectName,
             boqNumber: req.body.boqNumber,
-            boqItemsDesc: req.body.boqItemsDesc,
-            boqUnit: req.body.boqUnit,
-            boqQuantity: req.body.boqQuantity,
-            boqRate: req.body.boqRate,
-            boqAmount: req.body.boqAmount,
+            // boqNumber: req.body.boqNumber,
+            // boqItemsDesc: req.body.boqItemsDesc,
+            // boqUnit: req.body.boqUnit,
+            // boqQuantity: req.body.boqQuantity,
+            // boqRate: req.body.boqRate,
+            // boqAmount: req.body.boqAmount,
+            workorderAmount: req.body.workorderAmount,
             woValidityDate: req.body.woValidityDate,
             woCompletionDate: req.body.woCompletionDate,
             retentionPercentage: req.body.retentionPercentage,
@@ -33,7 +35,7 @@ const createWorkOrder = async (req, res) => {
 
 const getAllWorkOrders = async (req, res) => {
     try {
-        const getAllWorkOrders = await WorkOrder.find();
+        const getAllWorkOrders = await WorkOrder.find().populate('company');
         res.status(200).json(getAllWorkOrders);
     }catch (error) {
         res.status(400).json({ message: error.message });

@@ -125,7 +125,7 @@ export default function Companies() {
   return (
     <div className="companies-page-container flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
       {/* Sidebar */}
-      <Sidebar title="Company Dashboard" />
+      <Sidebar title="Company" />
 
       {/* Main Content */}
       <main className="companies-main flex-1 px-2 sm:px-4 md:px-8 py-6">

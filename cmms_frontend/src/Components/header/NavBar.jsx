@@ -222,7 +222,7 @@ const NavBar = () => {
       <div className="h-10vh flex justify-between text-white bg-slate-900 lg:py-5 px-20 py-4">
         <div className="logo flex items-center flex-1">
           <span className="font-bold text-3xl">
-            <a href="/">CMMS</a>
+            <a href="/">CMMS Portal</a>
           </span>
         </div>
 

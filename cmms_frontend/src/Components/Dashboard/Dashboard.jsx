@@ -31,8 +31,14 @@ const Dashboard = () => {
     {
       title: 'Work Orders',
       icon: <FaClipboardList />,
-      path: '/work-orders',
+      path: '/workorders',
       description: 'Create and manage work orders'
+    },
+    {
+      title: 'BOQ',
+      icon: <FaMoneyBillWave />,
+      path: '/manage-boq',
+      description: 'Create and manage bill of quantity'
     },
     {
       title: 'Contractor Bills',

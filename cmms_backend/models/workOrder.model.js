@@ -25,28 +25,12 @@ const WorkOrderSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  boqNumber: {
-    type: String,
+  boqNumber: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "BOQ",
     required: true,
-    unique: true,
-  },
-  boqItemsDesc: {
-    type: String,
-    required: true,
-  },
-  boqUnit: {
-    type: String,
-    required: true,
-  },
-  boqQuantity: {
-    type: Number,
-    required: true,
-  },
-  boqRate: {
-    type: Number,
-    required: true,
-  },
-  boqAmount: {
+  }],
+  workorderAmount: {
     type: Number,
     required: true,
   },

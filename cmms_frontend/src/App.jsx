@@ -1,17 +1,18 @@
-import './App.css';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import NavBar from './Components/header/NavBar';
-import UserLogin from './Components/UserLogin/UserLogin';
-import Dashboard from './Components/Dashboard/Dashboard';
-import Companies from './Components/Companies/Companies';
-import AdminProfile from './Components/AdminProfile/AdminProfile';
-import WorkOrder from './Components/Workorder/Workorder';
-import ContractorBills from './Components/ContractorBills/ContractorBills';
-
+import "./App.css";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import NavBar from "./Components/header/NavBar";
+import UserLogin from "./Components/UserLogin/UserLogin";
+import Dashboard from "./Components/Dashboard/Dashboard";
+import Companies from "./Components/Companies/Companies";
+import AdminProfile from "./Components/AdminProfile/AdminProfile";
+import ContractorBills from "./Components/ContractorBills/ContractorBills";
+import ManageWorkorder from "./Components/Workorder/ManageWorkorder";
+import ManageBOQ from "./Components/Boq/ManageBOQ";
+import WorkOrder from "./Components/Workorder/Workorder";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (!token) {
     return <Navigate to="/signin" replace />;
   }
@@ -23,7 +24,7 @@ function App() {
     <BrowserRouter>
       <NavBar />
       <Routes>
-        <Route path='/' element={<UserLogin />} />
+        <Route path="/" element={<UserLogin />} />
         <Route path="/signin" element={<UserLogin />} />
         <Route path="/signup" element={<UserLogin />} />
         <Route
@@ -34,8 +35,8 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route 
-          path='/profile/:username'
+        <Route
+          path="/profile/:username"
           element={
             <ProtectedRoute>
               <AdminProfile />
@@ -51,21 +52,55 @@ function App() {
           }
         />
 
-        <Route 
-          path='/work-orders' 
+        <Route
+          path="/manage-workorder"
+          element={
+            <ProtectedRoute>
+              <ManageWorkorder />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/workorders"
           element={
             <ProtectedRoute>
               <WorkOrder />
             </ProtectedRoute>
-          } 
+          }
         />
 
-        <Route path='/contractor-bills' element={<ProtectedRoute> <ContractorBills /> </ProtectedRoute>} />
-        
+        <Route
+          path="/manage-boq"
+          element={
+            <ProtectedRoute>
+              <ManageBOQ />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/contractor-bills"
+          element={
+            <ProtectedRoute>
+              <ContractorBills />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/manage-workorder/:id"
+          element={
+            <ProtectedRoute>
+              <ManageWorkorder />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Add other protected routes here */}
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;
