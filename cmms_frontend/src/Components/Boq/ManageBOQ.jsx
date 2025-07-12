@@ -2,11 +2,29 @@ import { useState, useEffect } from "react";
 import Sidebar from "../Sidebar/Sidebar";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaEye } from "react-icons/fa";
-import "./ManageBOQ.css";
+import {
+  FaEdit,
+  FaTrash,
+  FaPlus,
+  FaSave,
+  FaTimes,
+  FaEye,
+} from "react-icons/fa";
+// import "./ManageBOQ.css"; // Keep this import for your custom CSS
+
+const initialForm = {
+  boqNumber: "",
+  boqItemsDesc: "",
+  workOrder: "",
+  boqUnit: "",
+  boqQuantity: "",
+  boqRate: "",
+  boqAmount: "",
+};
 
 const ManageBOQ = () => {
   const [boqs, setBoqs] = useState([]);
+  const [workorders, setWorkorders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -22,24 +40,34 @@ const ManageBOQ = () => {
   const { id } = useParams();
 
   // Form state
-  const [formData, setFormData] = useState({
-    boqNumber: "",
-    boqItemsDesc: "",
-    boqUnit: "",
-    boqQuantity: "",
-    boqRate: "",
-    boqAmount: "",
-  });
+  const [formData, setFormData] = useState(initialForm);
 
   const boqPerPage = 6;
-  const filteredBOQs = boqs.filter(boq =>
+  const filteredBOQs = boqs.filter((boq) =>
     boq.boqNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const sortedBOQs = [...filteredBOQs].sort((a, b) => {
-    const aValue = a[sortBy]?.toString().toLowerCase();
-    const bValue = b[sortBy]?.toString().toLowerCase();
-    return sortOrder === "asc" 
+    // Handling potential null/undefined values and ensuring comparison of actual values
+    const aValue = a[sortBy]?.toString().toLowerCase() || "";
+    const bValue = b[sortBy]?.toString().toLowerCase() || "";
+
+    // Special handling for numerical sorts if sortBy field is numeric
+    if (
+      sortBy === "boqQuantity" ||
+      sortBy === "boqRate" ||
+      sortBy === "boqAmount"
+    ) {
+      const numA = parseFloat(aValue);
+      const numB = parseFloat(bValue);
+      if (sortOrder === "asc") {
+        return numA - numB;
+      } else {
+        return numB - numA;
+      }
+    }
+
+    return sortOrder === "asc"
       ? aValue.localeCompare(bValue)
       : bValue.localeCompare(aValue);
   });
@@ -49,6 +77,18 @@ const ManageBOQ = () => {
     currentPage * boqPerPage,
     currentPage * boqPerPage + boqPerPage
   );
+
+  // Fetch all Companies Data
+  const fetchWorkorders = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/api/workorder/getAll");
+      setWorkorders(res.data);
+      console.log(res.data);
+    } catch (err) {
+      console.log(err);
+      setError("Failed to fetch WorkOrders!");
+    }
+  };
 
   // Fetch all BOQ data
   const fetchBoqs = async () => {
@@ -76,6 +116,7 @@ const ManageBOQ = () => {
   };
 
   useEffect(() => {
+    fetchWorkorders();
     fetchBoqs();
     if (id) {
       setEditingId(id);
@@ -86,19 +127,31 @@ const ManageBOQ = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
 
     // Auto-calculate amount when quantity or rate changes
     if (name === "boqQuantity" || name === "boqRate") {
-      const quantity = name === "boqQuantity" ? value : formData.boqQuantity;
-      const rate = name === "boqRate" ? value : formData.boqRate;
-      if (quantity && rate) {
-        setFormData(prev => ({
+      const quantity =
+        name === "boqQuantity"
+          ? parseFloat(value)
+          : parseFloat(formData.boqQuantity);
+      const rate =
+        name === "boqRate" ? parseFloat(value) : parseFloat(formData.boqRate);
+
+      if (!isNaN(quantity) && !isNaN(rate)) {
+        // Ensure they are valid numbers
+        setFormData((prev) => ({
           ...prev,
-          boqAmount: (parseFloat(quantity) * parseFloat(rate)).toFixed(2)
+          boqAmount: (quantity * rate).toFixed(2),
+        }));
+      } else {
+        setFormData((prev) => ({
+          // Clear amount if inputs are invalid
+          ...prev,
+          boqAmount: "",
         }));
       }
     }
@@ -112,23 +165,19 @@ const ManageBOQ = () => {
 
     try {
       if (editingId) {
-        await axios.put(`http://localhost:3000/api/boq/update/${editingId}`, formData);
+        await axios.put(
+          `http://localhost:3000/api/boq/update/${editingId}`,
+          formData
+        );
         setSuccess("BOQ updated successfully!");
       } else {
         await axios.post("http://localhost:3000/api/boq/create", formData);
         setSuccess("BOQ created successfully!");
       }
-      
+
       setShowForm(false);
       setEditingId(null);
-      setFormData({
-        boqNumber: "",
-        boqItemsDesc: "",
-        boqUnit: "",
-        boqQuantity: "",
-        boqRate: "",
-        boqAmount: "",
-      });
+      setFormData(initialForm);
       fetchBoqs();
     } catch (err) {
       setError(err.response?.data?.message || "Operation failed");
@@ -153,7 +202,7 @@ const ManageBOQ = () => {
 
   const handleDelete = async (boqId) => {
     if (!window.confirm("Are you sure you want to delete this BOQ?")) return;
-    
+
     setLoading(true);
     setError("");
     try {
@@ -171,14 +220,7 @@ const ManageBOQ = () => {
     setShowForm(false);
     setEditingId(null);
     setViewingId(null);
-    setFormData({
-      boqNumber: "",
-      boqItemsDesc: "",
-      boqUnit: "",
-      boqQuantity: "",
-      boqRate: "",
-      boqAmount: "",
-    });
+    setFormData(initialForm); // Reset to initialForm
   };
 
   const handleSort = (field) => {
@@ -192,12 +234,19 @@ const ManageBOQ = () => {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      {/* Sidebar */}
-      <Sidebar title="Manage BOQ" />
+      <div className={showForm ? "hidden md:hidden" : "block md:block"}>
+        <Sidebar title="Manage BOQ" />
+      </div>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6">
-        <div className="max-w-7xl mx-auto">
+      <main
+        className={`flex-1 px-1 sm:px-4 md:px-8 py-6 ${
+          showForm ? "w-full" : "md:w-[calc(100%-16rem)]"
+        }`}
+      >
+        {" "}
+        {/* Adjust width dynamically */}
+        <div className="main-div max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8 text-center">
             <h1 className="text-3xl md:text-4xl font-extrabold text-blue-700 mb-2 drop-shadow-lg">
@@ -210,21 +259,26 @@ const ManageBOQ = () => {
 
           {/* Success/Error Messages */}
           {success && (
-            <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+            <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg animate-fadeIn">
               {success}
             </div>
           )}
           {error && (
-            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg animate-fadeIn">
               {error}
             </div>
           )}
 
           {/* Controls */}
           <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <div className="add-dashboard-btn flex flex-col sm:flex-row gap-4 sm:w-auto">
               <button
-                onClick={() => setShowForm(true)}
+                onClick={() => {
+                  setShowForm(true);
+                  setEditingId(null);
+                  setViewingId(null);
+                  setFormData(initialForm);
+                }} // Reset form data when adding new
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
               >
                 <FaPlus /> Add New BOQ
@@ -238,25 +292,29 @@ const ManageBOQ = () => {
             </div>
 
             {/* Search */}
-            <div className="w-full sm:w-64">
+            <div className="sm:w-64">
               <input
                 type="text"
                 placeholder="Search BOQs..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent search-input"
               />
             </div>
           </div>
 
           {/* Form Modal */}
           {showForm && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div className="p-6">
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50 modal-backdrop">
+              <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6">
+                <div className="">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold text-gray-800">
-                      {viewingId ? "View BOQ" : editingId ? "Edit BOQ" : "Add New BOQ"}
+                      {viewingId
+                        ? "View BOQ"
+                        : editingId
+                        ? "Edit BOQ"
+                        : "Add New BOQ"}
                     </h2>
                     <button
                       onClick={handleCancel}
@@ -268,7 +326,7 @@ const ManageBOQ = () => {
 
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
+                      <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           BOQ Number *
                         </label>
@@ -279,13 +337,13 @@ const ManageBOQ = () => {
                           onChange={handleInputChange}
                           disabled={viewingId}
                           required
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                          className="form-control"
                         />
                       </div>
 
-                      <div>
+                      <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Unit *
+                          BOQ Item Unit *
                         </label>
                         <select
                           name="boqUnit"
@@ -293,7 +351,7 @@ const ManageBOQ = () => {
                           onChange={handleInputChange}
                           disabled={viewingId}
                           required
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                          className="form-control"
                         >
                           <option value="">Select Unit</option>
                           <option value="Nos">Nos</option>
@@ -308,9 +366,9 @@ const ManageBOQ = () => {
                       </div>
                     </div>
 
-                    <div>
+                    <div className="form-group">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Description *
+                        BOQ Item Description *
                       </label>
                       <textarea
                         name="boqItemsDesc"
@@ -319,14 +377,34 @@ const ManageBOQ = () => {
                         disabled={viewingId}
                         required
                         rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                        className="form-control"
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Quantity *
+                          WorkOrder No. *
+                        </label>
+                        <select
+                          name="workOrder"
+                          value={formData.workOrder}
+                          onChange={handleInputChange}
+                          disabled={viewingId}
+                          required
+                          className="form-control"
+                        >
+                          <option value="">Select WorkOrder No.</option>
+                          {workorders.map((wo) => (
+                            <option key={wo._id} value={wo._id}>
+                              {wo.woNumber}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          BOQ Item Quantity *
                         </label>
                         <input
                           type="number"
@@ -337,13 +415,13 @@ const ManageBOQ = () => {
                           required
                           step="0.01"
                           min="0"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                          className="form-control"
                         />
                       </div>
 
-                      <div>
+                      <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Rate (₹) *
+                          BOQ Item Rate (₹) *
                         </label>
                         <input
                           type="number"
@@ -354,13 +432,15 @@ const ManageBOQ = () => {
                           required
                           step="0.01"
                           min="0"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                          className="form-control"
                         />
                       </div>
 
-                      <div>
+                      <div className="form-group">
+                        {" "}
+                        {/* Added form-group */}
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Amount (₹) *
+                          BOQ Item Amount (₹) *
                         </label>
                         <input
                           type="number"
@@ -371,7 +451,7 @@ const ManageBOQ = () => {
                           required
                           step="0.01"
                           min="0"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 bg-gray-50"
+                          className="form-control bg-gray-50"
                         />
                       </div>
                     </div>
@@ -381,15 +461,19 @@ const ManageBOQ = () => {
                         <button
                           type="submit"
                           disabled={loading}
-                          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors disabled:opacity-50"
+                          className="flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-colors disabled:opacity-50 btn-primary"
                         >
                           <FaSave />
-                          {loading ? "Saving..." : editingId ? "Update" : "Save"}
+                          {loading
+                            ? "Saving..."
+                            : editingId
+                            ? "Update"
+                            : "Save"}
                         </button>
                         <button
                           type="button"
                           onClick={handleCancel}
-                          className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+                          className="px-6 py-2 rounded-lg font-semibold transition-colors btn-secondary"
                         >
                           Cancel
                         </button>
@@ -401,131 +485,172 @@ const ManageBOQ = () => {
             </div>
           )}
 
-          {/* BOQ List */}
+          {/* BOQ List - Responsive Table (Workorder style) */}
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            {/* Table Header */}
-            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-              <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700">
-                <div className="col-span-2">
-                  <button
-                    onClick={() => handleSort("boqNumber")}
-                    className="flex items-center gap-1 hover:text-blue-600"
-                  >
-                    BOQ Number
-                    {sortBy === "boqNumber" && (
-                      <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
-                    )}
-                  </button>
-                </div>
-                <div className="col-span-4">Description</div>
-                <div className="col-span-1">Unit</div>
-                <div className="col-span-1">
-                  <button
-                    onClick={() => handleSort("boqQuantity")}
-                    className="flex items-center gap-1 hover:text-blue-600"
-                  >
-                    Qty
-                    {sortBy === "boqQuantity" && (
-                      <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
-                    )}
-                  </button>
-                </div>
-                <div className="col-span-1">
-                  <button
-                    onClick={() => handleSort("boqRate")}
-                    className="flex items-center gap-1 hover:text-blue-600"
-                  >
-                    Rate
-                    {sortBy === "boqRate" && (
-                      <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
-                    )}
-                  </button>
-                </div>
-                <div className="col-span-1">
-                  <button
-                    onClick={() => handleSort("boqAmount")}
-                    className="flex items-center gap-1 hover:text-blue-600"
-                  >
-                    Amount
-                    {sortBy === "boqAmount" && (
-                      <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
-                    )}
-                  </button>
-                </div>
-                <div className="col-span-2 text-center">Actions</div>
-              </div>
+            <div className="overflow-x-auto table-responsive">
+              <table className="w-full text-sm text-left boq-table">
+                <thead className="bg-gray-200 border-b border-gray-200">
+                  <tr>
+                    <th className="px-2 py-3 min-w-[140px] text-center">
+                      <button
+                        onClick={() => handleSort("workOrder")}
+                        className="items-center gap-1 hover:text-blue-600 sort-indicator"
+                      >
+                        WorkOrder No.
+                        {sortBy === "workOrder" && (
+                          <span className="sort-arrow">
+                            {sortOrder === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </button>
+                    </th>
+                    <th className="px-2 py-3 min-w-[140px] text-center">
+                      <button
+                        onClick={() => handleSort("boqNumber")}
+                        className="items-center gap-1 hover:text-blue-600 sort-indicator"
+                      >
+                        BOQ Number
+                        {sortBy === "boqNumber" && (
+                          <span className="sort-arrow">
+                            {sortOrder === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </button>
+                    </th>
+                    <th className="px-2 py-3 min-w-[200px] text-center">
+                      BOQ Item Description
+                    </th>
+                    <th className="px-2 py-3 min-w-[100px] text-center">
+                      BOQ Item Unit
+                    </th>
+                    <th className="px-2 py-3 min-w-[120px] text-center">
+                      <button
+                        onClick={() => handleSort("boqQuantity")}
+                        className="items-center gap-1 hover:text-blue-600 sort-indicator"
+                      >
+                        BOQ Item Quantity
+                        {sortBy === "boqQuantity" && (
+                          <span className="sort-arrow">
+                            {sortOrder === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}{" "}
+                      </button>
+                    </th>
+                    <th className="px-2 py-3 min-w-[120px] text-center">
+                      <button
+                        onClick={() => handleSort("boqRate")}
+                        className="items-center gap-1 hover:text-blue-600 sort-indicator"
+                      >
+                        BOQ Item Rate
+                        {sortBy === "boqRate" && (
+                          <span className="sort-arrow">
+                            {sortOrder === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </button>
+                    </th>
+                    <th className="px-2 py-3 min-w-[140px] text-center">
+                      <button
+                        onClick={() => handleSort("boqAmount")}
+                        className="items-center gap-1 hover:text-blue-600 sort-indicator"
+                      >
+                        BOQ Item Amount
+                        {sortBy === "boqAmount" && (
+                          <span className="sort-arrow">
+                            {sortOrder === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </button>
+                    </th>
+                    <th className="px-2 py-3 min-w-[120px] text-center">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={8} className="p-8 text-center text-gray-500">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto spinner"></div>
+                        <p className="mt-2">Loading...</p>
+                      </td>
+                    </tr>
+                  ) : currentBOQs.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="p-8 text-center text-gray-500">
+                        {searchTerm
+                          ? "No BOQs found matching your search."
+                          : "No BOQs found."}
+                      </td>
+                    </tr>
+                  ) : (
+                    currentBOQs.map((boq) => (
+                      <tr
+                        key={boq._id}
+                        className="boq-row border-b border-gray-100 hover:bg-gray-50 odd:bg-white even:bg-gray-100"
+                      >
+                        <td className="px-2 py-2 text-gray-700 text-center">
+                          {
+                            workorders.find((wo) => wo._id === boq.workOrder)
+                              ?.woNumber
+                          }
+                        </td>
+                        <td className="px-2 py-2 font-medium text-blue-600 text-center">
+                          {boq.boqNumber}
+                        </td>
+                        <td className="px-2 py-2 text-gray-700 text-justify">
+                          {boq.boqItemsDesc}
+                        </td>
+                        <td className="px-2 py-2 text-gray-600 text-center">
+                          {boq.boqUnit}
+                        </td>
+                        <td className="px-2 py-2 text-gray-700 text-center">
+                          {boq.boqQuantity}
+                        </td>
+                        <td className="px-2 py-2 text-gray-700 text-center">
+                          ₹{boq.boqRate}
+                        </td>
+                        <td className="px-2 py-2 font-semibold text-green-600 text-center">
+                          ₹{boq.boqAmount}
+                        </td>
+                        <td className="px-2 py-2 flex justify-center gap-2">
+                          <button
+                            onClick={() => handleView(boq)}
+                            className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors action-btn action-btn-view"
+                            title="View"
+                          >
+                            <FaEye size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(boq)}
+                            className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors action-btn action-btn-edit"
+                            title="Edit"
+                          >
+                            <FaEdit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(boq._id)}
+                            className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors action-btn action-btn-delete"
+                            title="Delete"
+                          >
+                            <FaTrash size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
-
-            {/* Table Body */}
-            {loading ? (
-              <div className="p-8 text-center text-gray-500">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-2">Loading...</p>
-              </div>
-            ) : currentBOQs.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                {searchTerm ? "No BOQs found matching your search." : "No BOQs found."}
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-200">
-                {currentBOQs.map((boq) => (
-                  <div key={boq._id} className="px-4 py-3 hover:bg-gray-50 transition-colors">
-                    <div className="grid grid-cols-12 gap-4 items-center text-sm">
-                      <div className="col-span-2 font-medium text-blue-600">
-                        {boq.boqNumber}
-                      </div>
-                      <div className="col-span-4 text-gray-700">
-                        {boq.boqItemsDesc}
-                      </div>
-                      <div className="col-span-1 text-gray-600">
-                        {boq.boqUnit}
-                      </div>
-                      <div className="col-span-1 text-gray-700">
-                        {boq.boqQuantity}
-                      </div>
-                      <div className="col-span-1 text-gray-700">
-                        ₹{boq.boqRate}
-                      </div>
-                      <div className="col-span-1 font-semibold text-green-600">
-                        ₹{boq.boqAmount}
-                      </div>
-                      <div className="col-span-2 flex justify-center gap-2">
-                        <button
-                          onClick={() => handleView(boq)}
-                          className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="View"
-                        >
-                          <FaEye size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(boq)}
-                          className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <FaEdit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(boq._id)}
-                          className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <FaTrash size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="mt-6 flex justify-center items-center gap-4">
               <button
-                onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
                 disabled={currentPage === 0}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors pagination-btn"
               >
                 Previous
               </button>
@@ -533,9 +658,11 @@ const ManageBOQ = () => {
                 Page {currentPage + 1} of {totalPages}
               </span>
               <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))
+                }
                 disabled={currentPage === totalPages - 1}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors pagination-btn"
               >
                 Next
               </button>
@@ -543,30 +670,60 @@ const ManageBOQ = () => {
           )}
 
           {/* Summary */}
-          <div className="mt-6 bg-white rounded-lg shadow-lg p-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Summary</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="mt-6 bg-white rounded-lg shadow-lg p-2 sm:p-4 summary-card">
+            {" "}
+            {/* Added summary-card */}
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">
+              Summary
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{boqs.length}</div>
-                <div className="text-gray-600">Total BOQs</div>
+                <div className="text-2xl font-bold text-blue-600 summary-value">
+                  {" "}
+                  {/* Added summary-value */}
+                  {boqs.length}
+                </div>
+                <div className="text-gray-600 summary-label">Total BOQs</div>{" "}
+                {/* Added summary-label */}
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  ₹{boqs.reduce((sum, boq) => sum + (parseFloat(boq.boqAmount) || 0), 0).toFixed(2)}
+                <div className="text-2xl font-bold text-green-600 summary-value">
+                  {" "}
+                  {/* Added summary-value */}₹
+                  {boqs
+                    .reduce(
+                      (sum, boq) => sum + (parseFloat(boq.boqAmount) || 0),
+                      0
+                    )
+                    .toFixed(2)}
                 </div>
-                <div className="text-gray-600">Total Amount</div>
+                <div className="text-gray-600 summary-label">Total Amount</div>{" "}
+                {/* Added summary-label */}
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">
-                  {boqs.reduce((sum, boq) => sum + (parseFloat(boq.boqQuantity) || 0), 0).toFixed(2)}
+                <div className="text-2xl font-bold text-purple-600 summary-value">
+                  {" "}
+                  {/* Added summary-value */}
+                  {boqs
+                    .reduce(
+                      (sum, boq) => sum + (parseFloat(boq.boqQuantity) || 0),
+                      0
+                    )
+                    .toFixed(2)}
                 </div>
-                <div className="text-gray-600">Total Quantity</div>
+                <div className="text-gray-600 summary-label">
+                  Total Quantity
+                </div>{" "}
+                {/* Added summary-label */}
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">
-                  {new Set(boqs.map(boq => boq.boqUnit)).size}
+                <div className="text-2xl font-bold text-orange-600 summary-value">
+                  {" "}
+                  {/* Added summary-value */}
+                  {new Set(boqs.map((boq) => boq.boqUnit)).size}
                 </div>
-                <div className="text-gray-600">Unique Units</div>
+                <div className="text-gray-600 summary-label">Unique Units</div>{" "}
+                {/* Added summary-label */}
               </div>
             </div>
           </div>

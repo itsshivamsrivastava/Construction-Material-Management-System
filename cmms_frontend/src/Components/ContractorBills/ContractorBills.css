@@ -1,0 +1,158 @@
+/* Manage Contractor Bills Page Custom Styles */
+
+.contractor-bill-row {
+  animation: slideIn 0.3s ease-out;
+}
+
+.modal-overlay {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.action-btn-view {
+  color: #2563eb;
+  background: #e0e7ff;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  transition: background 0.2s;
+}
+.action-btn-view:hover {
+  background: #c7d2fe;
+}
+.action-btn-edit {
+  color: #059669;
+  background: #d1fae5;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  transition: background 0.2s;
+}
+.action-btn-edit:hover {
+  background: #a7f3d0;
+}
+.action-btn-delete {
+  color: #dc2626;
+  background: #fee2e2;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  transition: background 0.2s;
+}
+.action-btn-delete:hover {
+  background: #fecaca;
+}
+
+.search-input {
+  border: 1px solid #e2e8f0;
+  background: #f9fafb;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.submit-button {
+  background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  padding: 0.75rem;
+  margin-top: 1rem;
+}
+.submit-button:hover {
+  opacity: 0.9;
+}
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status-message {
+  text-align: center;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+}
+.error-message {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+.success-message {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.summary-card {
+  background: #f1f5f9;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem 1rem;
+  transition: all 0.3s ease;
+}
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -3px rgba(59, 130, 246, 0.1);
+}
+.summary-value {
+  font-size: 2rem;
+  font-weight: bold;
+}
+.summary-label {
+  color: #64748b;
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+.pagination-btn {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+}
+.pagination-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

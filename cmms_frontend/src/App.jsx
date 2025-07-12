@@ -9,6 +9,7 @@ import ContractorBills from "./Components/ContractorBills/ContractorBills";
 import ManageWorkorder from "./Components/Workorder/ManageWorkorder";
 import ManageBOQ from "./Components/Boq/ManageBOQ";
 import WorkOrder from "./Components/Workorder/Workorder";
+import ManageMaterials from "./Components/Materials/ManageMaterials";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -69,6 +70,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/manage-workorder/:id"
+          element={
+            <ProtectedRoute>
+              <ManageWorkorder />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/manage-boq"
@@ -89,10 +98,10 @@ function App() {
         />
 
         <Route
-          path="/manage-workorder/:id"
+          path="/manage-materials"
           element={
             <ProtectedRoute>
-              <ManageWorkorder />
+              <ManageMaterials />
             </ProtectedRoute>
           }
         />

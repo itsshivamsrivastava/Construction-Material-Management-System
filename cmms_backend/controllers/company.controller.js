@@ -2,7 +2,9 @@ import Company from "../models/company.model.js";
 
 // Create a new company
 const createCompany = async (req, res) => {
+    const companyId = Math.floor(Math.random() * 1000000);
     const company = new Company({
+        company_id: companyId,
         name: req.body.name,
         gstNumber: req.body.gstNumber,
         address: req.body.address

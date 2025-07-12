@@ -4,7 +4,7 @@ import Sidebar from "../Sidebar/Sidebar";
 
 const API_BASE = "http://localhost:3000/api/company";
 
-const initialForm = { name: "", gstNumber: "", address: "" };
+const initialForm = { company_id: "", name: "", gstNumber: "", address: "" };
 
 export default function Companies() {
   const [companies, setCompanies] = useState([]);
@@ -78,6 +78,7 @@ export default function Companies() {
   // Handle edit
   const handleEdit = (company) => {
     setForm({
+      company_id: company.company_id,
       name: company.name,
       gstNumber: company.gstNumber,
       address: company.address,
@@ -143,6 +144,15 @@ export default function Companies() {
         >
           <input
             type="text"
+            name="company_id"
+            value={form.company_id}
+            onChange={handleChange}
+            placeholder="Company ID"
+            className="w-full md:w-1/4 px-4 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition placeholder-gray-400 text-gray-700 shadow-sm"
+            disabled
+          />
+          <input
+            type="text"
             name="name"
             value={form.name}
             onChange={handleChange}
@@ -200,18 +210,21 @@ export default function Companies() {
         )}
         <div className="companies-table-wrapper overflow-x-auto rounded-2xl shadow-lg bg-white/90 border border-blue-100">
           <table className="companies-table w-full divide-y divide-blue-200">
-            <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
+            <thead className="text-center bg-gradient-to-r from-blue-600 to-blue-400 text-white">
               <tr>
-                <th className="py-3 px-4 text-left font-semibold tracking-wide">
+                <th className="py-3 px-4 font-semibold tracking-wide">
+                  Comapny ID
+                </th>
+                <th className="py-3 px-4 font-semibold tracking-wide">
                   Name
                 </th>
-                <th className="py-3 px-4 text-left font-semibold tracking-wide">
+                <th className="py-3 px-4 font-semibold tracking-wide">
                   GST Number
                 </th>
-                <th className="py-3 px-4 text-left font-semibold tracking-wide">
+                <th className="py-3 px-4 font-semibold tracking-wide">
                   Address
                 </th>
-                <th className="py-3 px-4 text-center font-semibold tracking-wide">
+                <th className="py-3 px-4 font-semibold tracking-wide">
                   Actions
                 </th>
               </tr>
@@ -220,7 +233,7 @@ export default function Companies() {
               {loading ? (
                 <tr>
                   <td
-                    colSpan="4"
+                    colSpan="5"
                     className="text-center py-8 text-blue-500 font-semibold animate-pulse"
                   >
                     Loading...
@@ -228,13 +241,16 @@ export default function Companies() {
                 </tr>
               ) : companies.length === 0 ? (
                 <tr>
-                  <td colSpan="4" className="text-center py-8 text-gray-400">
+                  <td colSpan="5" className="text-center py-8 text-gray-400">
                     No companies found.
                   </td>
                 </tr>
               ) : (
                 paginatedCompanies.map((company) => (
-                  <tr key={company._id} className="hover:bg-blue-50 transition">
+                  <tr key={company._id} className="hover:bg-blue-50 transition text-center">
+                    <td className="py-3 px-4 text-gray-800 font-medium">
+                      {company.company_id}
+                    </td>
                     <td className="py-3 px-4 text-gray-800 font-medium">
                       {company.name}
                     </td>

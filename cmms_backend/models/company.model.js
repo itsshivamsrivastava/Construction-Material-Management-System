@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const companySchema = new mongoose.Schema({
+  company_id: {
+    type: Number,
+    required: true,
+    unique: true,
+  },
   name: {
     type: String,
     required: true,
@@ -8,7 +13,6 @@ const companySchema = new mongoose.Schema({
   gstNumber: {
     type: String,
     required: true,
-    unique: true,
   },
   address: {
     type: String,

@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
 const BOQSchema = new mongoose.Schema({
-  company: {
+  workorder: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Company",
+    ref: "WorkOrder",
   },
   boqNumber: {
     type: String,

@@ -32,7 +32,6 @@ const WorkOrder = () => {
     projectName: "",
     boqNumber: "",
     company: "",
-    workorderAmount: "",
     woValidityDate: "",
     woCompletionDate: "",
     retentionPercentage: "",
@@ -88,7 +87,6 @@ const WorkOrder = () => {
         projectName: data.projectName || "",
         boqNumber: data.boqNumber || "",
         company: typeof data.company === "object" && data.company !== null ? data.company._id : data.company || "",
-        workorderAmount: data.workorderAmount || "",
         woValidityDate: data.woValidityDate ? data.woValidityDate.slice(0, 10) : "",
         woCompletionDate: data.woCompletionDate ? data.woCompletionDate.slice(0, 10) : "",
         retentionPercentage: data.retentionPercentage || "",
@@ -158,7 +156,6 @@ const WorkOrder = () => {
         projectName: "",
         boqNumber: "",
         company: "",
-        workorderAmount: "",
         woValidityDate: "",
         woCompletionDate: "",
         retentionPercentage: "",
@@ -182,7 +179,6 @@ const WorkOrder = () => {
       projectName: workorder.projectName || "",
       boqNumber: workorder.boqNumber || "",
       company: typeof workorder.company === "object" && workorder.company !== null ? workorder.company._id : workorder.company || "",
-      workorderAmount: workorder.workorderAmount || "",
       woValidityDate: workorder.woValidityDate ? workorder.woValidityDate.slice(0, 10) : "",
       woCompletionDate: workorder.woCompletionDate ? workorder.woCompletionDate.slice(0, 10) : "",
       retentionPercentage: workorder.retentionPercentage || "",
@@ -203,7 +199,6 @@ const WorkOrder = () => {
       projectName: workorder.projectName || "",
       boqNumber: workorder.boqNumber || "",
       company: workorder.company || "",
-      workorderAmount: workorder.workorderAmount || "",
       woValidityDate: workorder.woValidityDate ? workorder.woValidityDate.slice(0, 10) : "",
       woCompletionDate: workorder.woCompletionDate ? workorder.woCompletionDate.slice(0, 10) : "",
       retentionPercentage: workorder.retentionPercentage || "",
@@ -243,7 +238,6 @@ const WorkOrder = () => {
       projectName: "",
       boqNumber: "",
       company: "",
-      workorderAmount: "",
       woValidityDate: "",
       woCompletionDate: "",
       retentionPercentage: "",
@@ -281,8 +275,8 @@ const WorkOrder = () => {
       {/* Modal should be here to overlay everything */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6">
+            <div className="">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">
                   {viewingId ? "View Workorder" : editingId ? "Edit Workorder" : "Add New Workorder"}
@@ -444,23 +438,6 @@ const WorkOrder = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Work Order Amount *
-                    </label>
-                    <input
-                      type="number"
-                      name="workorderAmount"
-                      value={formData.workorderAmount}
-                      onChange={handleInputChange}
-                      disabled={viewingId}
-                      required
-                      step="0.01"
-                      min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Retention % *
                     </label>
                     <input
@@ -538,14 +515,12 @@ const WorkOrder = () => {
       )}
 
       {/* Sidebar */}
-      {/* <Sidebar title="Manage Workorder" /> */}
-      {/* Sidebar: hidden on small/medium when modal is open */}
-      <div className={showForm ? "hidden md:block" : "block"}>
+      <div className={showForm ? "hidden md:block" : "block md:block"}>
         <Sidebar title="Manage Workorder" />
       </div>
 
       {/* Main Content */}
-      <main className="workorder-main flex-1 px-2 sm:px-4 md:px-8 py-6">
+      <main className={`workorder-main flex-1 px-2 sm:px-4 md:px-8 py-6 ${showForm ? 'w-full' : 'md:w-[calc(100%-16rem)]'}`}>
         <div className="max-w-250 mx-auto">
           {/* Header */}
           <div className="mb-8 text-center">
@@ -559,12 +534,12 @@ const WorkOrder = () => {
 
           {/* Success/Error Messages */}
           {success && (
-            <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+            <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg animate-fadeIn">
               {success}
             </div>
           )}
           {error && (
-            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg animate-fadeIn">
               {error}
             </div>
           )}
@@ -605,13 +580,13 @@ const WorkOrder = () => {
                 <thead className="bg-gray-200 border-b border-gray-200">
                   <tr>
                     <th className="px-2 py-3 min-w-[140px] text-center">
-                      <button onClick={() => handleSort('woNumber')} className="flex items-center gap-1 hover:text-blue-600">
+                      <button onClick={() => handleSort('woNumber')} className="items-center gap-1 hover:text-blue-600">
                     WO Number
                         {sortBy === 'woNumber' && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}
                   </button>
                     </th>
                     <th className="px-2 py-3 min-w-[160px] text-center">
-                      <button onClick={() => handleSort('clientName')} className="flex items-center gap-1 hover:text-blue-600">
+                      <button onClick={() => handleSort('clientName')} className="items-center gap-1 hover:text-blue-600">
                     Client Name
                         {sortBy === 'clientName' && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}
                       </button>
@@ -619,7 +594,7 @@ const WorkOrder = () => {
                     <th className="px-2 py-3 min-w-[140px] text-center">Client Nickname</th>
                     <th className="px-2 py-3 min-w-[160px] text-center">Company</th>
                     <th className="px-2 py-3 min-w-[180px] text-center">
-                      <button onClick={() => handleSort('projectName')} className="flex items-center gap-1 hover:text-blue-600">
+                      <button onClick={() => handleSort('projectName')} className="items-center gap-1 hover:text-blue-600">
                         Project Name
                         {sortBy === 'projectName' && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}
                   </button>
@@ -628,12 +603,6 @@ const WorkOrder = () => {
                     <th className="px-2 py-3 min-w-[120px] text-center">WO Date</th>
                     <th className="px-2 py-3 min-w-[140px] text-center">WO Validity Date</th>
                     <th className="px-2 py-3 min-w-[160px] text-center">WO Completion Date</th>
-                    <th className="px-2 py-3 min-w-[170px] text-center">
-                      <button onClick={() => handleSort('workorderAmount')} className="flex items-center gap-1 hover:text-blue-600">
-                    Work Order Amount
-                        {sortBy === 'workorderAmount' && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}
-                  </button>
-                    </th>
                     <th className="px-2 py-3 min-w-[100px] text-center">Retention %</th>
                     <th className="px-2 py-3 min-w-[100px] text-center">PBG %</th>
                     <th className="px-2 py-3 min-w-[120px] text-center">PBG Duration</th>
@@ -666,7 +635,6 @@ const WorkOrder = () => {
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.woDate ? workorder.woDate.slice(0, 10) : ""}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.woValidityDate ? workorder.woValidityDate.slice(0, 10) : ""}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.woCompletionDate ? workorder.woCompletionDate.slice(0, 10) : ""}</td>
-                        <td className="px-2 py-2 font-semibold text-center text-green-600">₹{workorder.workorderAmount}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.retentionPercentage}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.pbgPercentage}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.pbgDuration}</td>
@@ -709,16 +677,10 @@ const WorkOrder = () => {
           {/* Summary */}
           <div className="mt-6 bg-white rounded-lg shadow-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-3">Summary</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="text-center grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">{workorders.length}</div>
                 <div className="text-gray-600">Total Workorders</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  ₹{workorders.reduce((sum, wo) => sum + (parseFloat(wo.workorderAmount) || 0), 0).toFixed(2)}
-                </div>
-                <div className="text-gray-600">Total Amount</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-600">

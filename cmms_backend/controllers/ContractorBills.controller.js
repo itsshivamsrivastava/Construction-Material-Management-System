@@ -2,6 +2,8 @@ import ContractorBills from "../models/ContractorBill.model.js";
 
 const create = async (req, res) => {
     const constractorBill = new ContractorBills({
+        contractorWONumber: req.body.contractorWONumber,
+        contractorName: req.body.contractorName,
         projectName: req.body.projectName,
         workOrder: req.body.workOrder,
         contractorRABill: req.body.contractorRABill,
@@ -20,16 +22,16 @@ const create = async (req, res) => {
     }
 };
 
-const update = async (res, req) => {
+const update = async (req, res) => {
     const contractorBillId = req.params.id;
     try {
-        const updatedContractorBill = await ContractorBills.findByIdAndUpdate(contractorBillId, req.body, { new: true });
+        const updatedContractorBill = await ContractorBills.findByIdAndUpdate(contractorBillId, req.body, { new: true,  runValidators: true });
         if (!updatedContractorBill) {
             return res.status(404).json({ message: 'Contractor Bill not found' });
         }
         res.status(200).json(updatedContractorBill);
-    } catch (err) {
-        res.status(500).json(err);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
 };
 
@@ -59,6 +61,7 @@ const getContractorBillById = async (req, res) => {
     const contractorBillId = req.params.id;
     try {
         const contractorBill = await ContractorBills.findById(contractorBillId);
+        res.status(200).json(contractorBill);
     } catch (err) {
         res.status(500).json(err);
     }

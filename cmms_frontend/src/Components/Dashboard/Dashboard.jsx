@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaBuilding, FaFileInvoiceDollar, FaClipboardList, FaBoxes, FaShoppingCart, FaFileContract, FaMoneyBillWave, FaUsers } from 'react-icons/fa';
+import { FaBuilding, FaFileInvoiceDollar, FaClipboardList, FaBoxes, FaShoppingCart, FaFileContract, FaMoneyBillWave /*, FaUsers */} from 'react-icons/fa';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -49,7 +49,7 @@ const Dashboard = () => {
     {
       title: 'Materials',
       icon: <FaBoxes />,
-      path: '/materials',
+      path: '/manage-materials',
       description: 'Track and manage construction materials'
     },
     {
@@ -69,12 +69,6 @@ const Dashboard = () => {
       icon: <FaMoneyBillWave />,
       path: '/ra-bills',
       description: 'Process RA bill entries'
-    },
-    {
-      title: 'Users',
-      icon: <FaUsers />,
-      path: '/users',
-      description: 'Manage system users and permissions'
     }
   ];
 

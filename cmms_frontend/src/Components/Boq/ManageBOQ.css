@@ -1,5 +1,10 @@
 /* Custom styles for ManageBOQ component */
 
+/* Preventing horizintal scrolling */
+/* body {
+  overflow-x: hidden;
+} */
+
 /* Smooth transitions for all interactive elements */
 * {
   transition: all 0.2s ease-in-out;
@@ -50,6 +55,10 @@
 /* Apply animations to elements */
 .boq-row {
   animation: slideIn 0.3s ease-out;
+}
+
+.boq-card {
+  animation: fadeIn 0.3s ease-out;
 }
 
 .modal-overlay {
@@ -165,6 +174,17 @@ textarea:focus {
   box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
 }
 
+/* Mobile card specific styles */
+.boq-card .grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.boq-card .space-y-2 > div:first-child {
+  grid-column: 1 / -1;
+}
+
 /* Custom badge styles */
 .badge {
   display: inline-flex;
@@ -208,7 +228,7 @@ textarea:focus {
 }
 
 /* Responsive grid adjustments */
-@media (max-width: 768px) {
+@media (max-width: 1216px) {
   .grid-cols-12 {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
@@ -240,6 +260,37 @@ textarea:focus {
   .modal-content {
     margin: 1rem;
     max-height: calc(100vh - 2rem);
+  }
+  
+  /* Mobile card responsive adjustments */
+  .boq-card .grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .boq-card .space-y-2 > div:first-child {
+    grid-column: 1;
+  }
+  
+  /* Mobile form adjustments */
+  .manage-boq-main {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Mobile button adjustments */
+  .flex.flex-col.sm\:flex-row.gap-4 {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .flex.flex-col.sm\:flex-row.gap-4 > div {
+    width: 100%;
+  }
+  
+  .flex.flex-col.sm\:flex-row.gap-4 button {
+    width: 100%;
+    justify-content: center;
   }
 }
 
@@ -500,5 +551,84 @@ textarea:focus {
   
   .print-break-inside {
     page-break-inside: avoid;
+  }
+}
+
+/* Mobile-specific responsive improvements */
+@media (max-width: 480px) {
+  .boq-card {
+    margin: 0.5rem 0;
+    padding: 1rem;
+  }
+  
+  .boq-card h3 {
+    font-size: 1.125rem;
+  }
+  
+  .boq-card .grid {
+    gap: 0.5rem;
+  }
+  
+  .boq-card .space-y-2 {
+    margin-top: 0.75rem;
+  }
+  
+  /* Mobile form improvements */
+  .modal-content {
+    margin: 0.5rem;
+    max-height: calc(100vh - 1rem);
+  }
+  
+  .modal-content .p-6 {
+    padding: 1rem;
+  }
+  
+  /* Mobile summary improvements */
+  .grid.grid-cols-2.md\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .text-2xl {
+    font-size: 1.5rem;
+  }
+}
+
+/* Tablet-specific improvements */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .boq-card {
+    padding: 1.5rem;
+  }
+  
+  .boq-card .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .modal-content {
+    max-width: 90vw;
+  }
+}
+
+/* Ensure proper spacing on all screen sizes */
+.manage-boq-main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.manage-boq-main > div {
+  flex: 1;
+}
+
+/* Improve mobile navigation */
+@media (max-width: 768px) {
+  .manage-boq-main {
+    padding-top: 1rem;
+  }
+  
+  /* Hide sidebar on mobile when form is open */
+  .manage-boq-main:has(.fixed) {
+    padding-left: 0;
   }
 }
