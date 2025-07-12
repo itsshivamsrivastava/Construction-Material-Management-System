@@ -4,10 +4,8 @@ const create = async (req, res) => {
     const constractorBill = new ContractorBills({
         projectName: req.body.projectName,
         workOrder: req.body.workOrder,
-        contractorName: req.body.contractorName,
         contractorRABill: req.body.contractorRABill,
         billDate: req.body.billDate,
-        contractorWONumber: req.body.contractorWONumber,
         particulars: req.body.particulars,
         boqItem: req.body.boqItem,
         qtyClaimed: req.body.qtyClaimed,
