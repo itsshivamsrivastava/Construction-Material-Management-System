@@ -76,4 +76,14 @@ const deleteWorkOrder = async (req, res) => {
     }
 };
 
-export { createWorkOrder, getAllWorkOrders, getWorkOrderById, updateWorkOrder, deleteWorkOrder };
+const getWorkOrdersByCompany = async (req, res) => {
+    try {
+        const companyId = req.params.companyId;
+        const workOrders = await WorkOrder.find({ company: companyId }).populate('company');
+        res.status(200).json(workOrders);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+export { createWorkOrder, getAllWorkOrders, getWorkOrderById, updateWorkOrder, deleteWorkOrder, getWorkOrdersByCompany };

@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 
 const MaterialSchema = new mongoose.Schema({
-    workOrder: {
+    boq: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'WorkOrder',
+        ref: 'BOQ',
+        required: true,
     },
     materialName: {
         type: String,

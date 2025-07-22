@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const companySchema = new mongoose.Schema({
   company_id: {
-    type: Number,
+    type: String,
     required: true,
     unique: true,
   },

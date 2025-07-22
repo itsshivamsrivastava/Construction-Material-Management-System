@@ -14,7 +14,7 @@ const createMaterial = async (req, res) => {
 // Get all materials
 const getAllMaterials = async (req, res) => {
     try {
-        const materials = await Material.find();
+        const materials = await Material.find().populate('boq');
         res.status(200).json(materials);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -24,7 +24,7 @@ const getAllMaterials = async (req, res) => {
 // Get material by ID
 const getMaterialById = async (req, res) => {
     try {
-        const material = await Material.findById(req.params.id);
+        const material = await Material.findById(req.params.id).populate('boq');
         if (!material) {
             return res.status(404).json({ message: 'Material not found' });
         }

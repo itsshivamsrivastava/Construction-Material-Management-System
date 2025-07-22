@@ -1,6 +1,7 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import NavBar from "./Components/header/NavBar";
+// import Footer from "./Components/footer/Footer";
 import UserLogin from "./Components/UserLogin/UserLogin";
 import Dashboard from "./Components/Dashboard/Dashboard";
 import Companies from "./Components/Companies/Companies";
@@ -23,7 +24,10 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <BrowserRouter>
+      {/* Navigation Bar */}
       <NavBar />
+
+      {/* Routes */}
       <Routes>
         <Route path="/" element={<UserLogin />} />
         <Route path="/signin" element={<UserLogin />} />
@@ -70,6 +74,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/workorders/:id" element={<WorkOrder />} />
         <Route
           path="/manage-workorder/:id"
           element={
@@ -81,6 +86,14 @@ function App() {
 
         <Route
           path="/manage-boq"
+          element={
+            <ProtectedRoute>
+              <ManageBOQ />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manage-boq/:id"
           element={
             <ProtectedRoute>
               <ManageBOQ />
@@ -106,7 +119,7 @@ function App() {
           }
         />
 
-        {/* Add other protected routes here */}
+        {/* <Footer /> */}
       </Routes>
     </BrowserRouter>
   );
