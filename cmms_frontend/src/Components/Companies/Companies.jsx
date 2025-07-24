@@ -1,8 +1,18 @@
 import React, { useEffect, useState } from "react";
+import {
+  FaEdit,
+  FaTrash,
+  FaPlus,
+  FaSave,
+  FaTimes,
+  FaEye,
+} from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import "./Companies.css";
 import Sidebar from "../Sidebar/Sidebar";
 
 const API_BASE = "http://localhost:3000/api/company";
+const WORKORDER_API_BASE = "http://localhost:3000/api/workorder";
 
 const initialForm = { company_id: "", name: "", gstNumber: "", address: "" };
 
@@ -14,7 +24,20 @@ export default function Companies() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
   const recordsPerPage = 5;
+
+  // State for Workorder Modal
+  const [ShowTablePopUp, setShowTablePopUp] = useState(false);
+  const [workorders, setWorkorders] = useState([]);
+  const [showWorkordersModal, setShowWorkordersModal] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [companyWorkorders, setCompanyWorkorders] = useState([]);
+  const [workordersLoading, setWorkordersLoading] = useState(false);
+  const [workordersError, setWorkordersError] = useState("");
+  const [workordersSuccess, setWorkordersSuccess] = useState("");
+
+  const navigate = useNavigate();
 
   // Fetch companies
   const fetchCompanies = async () => {
@@ -25,8 +48,9 @@ export default function Companies() {
       const data = await res.json();
       setCompanies(data);
       setCurrentPage(1); // Reset to first page on fetch
-    } catch {
+    } catch (err) {
       setError("Failed to fetch companies");
+      console.error("Fetch companies error:", err);
     }
     setLoading(false);
   };
@@ -110,6 +134,7 @@ export default function Companies() {
 
   // Handle cancel edit
   const handleCancel = () => {
+    setShowTablePopUp(false);
     setForm(initialForm);
     setEditingId(null);
     setError("");
@@ -123,10 +148,216 @@ export default function Companies() {
     currentPage * recordsPerPage
   );
 
+  // Fetch workorders by company
+  const fetchWorkordersByCompany = async (companyId) => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`${WORKORDER_API_BASE}/byCompany/${companyId}`);
+      const data = await res.json();
+      setWorkorders(data);
+      setShowTablePopUp(true);
+    } catch (err) {
+      setError("Failed to fetch workorders");
+      console.error("Fetch workorders error:", err);
+    }
+    setLoading(false);
+  };
+
+  // Handle click on company name to show workorders
+  const handleCompanyClick = (company) => {
+    setSelectedCompany(company);
+    fetchWorkordersByCompany(company._id);
+    setShowTablePopUp(true);
+  };
+
+  // Handle edit workorder (redirect to Workorder page)
+  const handleEditWorkorder = (workorderId) => {
+    setShowWorkordersModal(false); // Close the modal
+    navigate(`/workorders/${workorderId}`);
+  };
+
+  // Handle delete workorder
+  const handleDeleteWorkorder = async (workorderId) => {
+    if (!window.confirm("Are you sure you want to delete this workorder?"))
+      return;
+    setWorkordersLoading(true);
+    setWorkordersError("");
+    setWorkordersSuccess("");
+    try {
+      const res = await fetch(`${WORKORDER_API_BASE}/delete/${workorderId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Delete failed");
+      setWorkordersSuccess("Workorder deleted successfully");
+      fetchWorkordersByCompany(selectedCompany._id);
+    } catch (err) {
+      setWorkordersError(err.message || "Delete failed");
+    }
+    setWorkordersLoading(false);
+  };
+
   return (
     <div className="companies-page-container flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+      {/* Modal for showing workorders by company */}
+      {ShowTablePopUp && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 modal-backdrop">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto p-6">
+            <div className="">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Work Orders for{" "}
+                  {selectedCompany
+                    ? `${selectedCompany.name} (${selectedCompany.company_id})`
+                    : "<company_name> (<company_id>)"}
+                </h2>
+                <button
+                  onClick={handleCancel}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <FaTimes size={24} />
+                </button>
+              </div>
+
+              {workordersSuccess && (
+                <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg animate-fadeIn">
+                  {workordersSuccess}
+                </div>
+              )}
+              {workordersError && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg animate-fadeIn">
+                  {workordersError}
+                </div>
+              )}
+
+              {/* Workorder Table */}
+              <div className="overflow-x-auto rounded-lg shadow-lg bg-white/90 border border-blue-100">
+                <table className="w-full divide-y divide-blue-200">
+                  <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
+                    <tr>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[140px]">
+                        WO Number
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[160px]">
+                        Company ID
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[160px]">
+                        Client Name
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[140px]">
+                        Client Nick Name
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[180px]">
+                        Project Name
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[120px]">
+                        WO Date
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[140px]">
+                        WO Validity Date
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[160px]">
+                        WO Completion Date
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[100px]">
+                        Retention %
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[100px]">
+                        PBG %
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[120px]">
+                        PBG Duration
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[120px]">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-blue-100">
+                    {workordersLoading ? (
+                    <tr>
+                      <td colSpan="6" className="text-center py-4 text-blue-500">Loading Workorders...</td>
+                    </tr>
+                  ) : workorders.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="text-center py-4 text-gray-400">No workorders found.</td>
+                    </tr>
+                  ) : (
+                    workorders.map((wo) => (
+                      <tr
+                        key={wo._id}
+                        className="hover:bg-blue-50 transition text-center"
+                      >
+                        <td className="py-3 px-4 text-gray-800 font-medium">
+                          {wo.woNumber}
+                        </td>
+                        <td className="py-3 px-4 text-gray-800 font-medium">
+                          {wo.company.company_id}
+                        </td>
+                        <td className="py-3 px-4 text-gray-700">
+                          {wo.clientName}
+                        </td>
+                        <td className="py-3 px-4 text-gray-700">
+                          {wo.clientNickName}
+                        </td>
+                        <td className="py-3 px-4 text-gray-700">
+                          {wo.projectName}
+                        </td>
+                        <td className="py-3 px-4 text-gray-700">
+                          {wo.woDate ? wo.woDate.slice(0, 10) : ""}
+                        </td>
+                        <td className="py-3 px-4 text-gray-700">
+                          {wo.woValidityDate
+                            ? wo.woValidityDate.slice(0, 10)
+                            : ""}
+                        </td>
+                        <td className="py-3 px-4 text-gray-700">
+                          {wo.woCompletionDate
+                            ? wo.woCompletionDate.slice(0, 10)
+                            : ""}
+                        </td>
+                        <td className="py-3 px-4 text-gray-700">
+                          {wo.retentionPercentage}%
+                        </td>
+                        <td className="py-3 px-4 text-gray-700">
+                          {wo.pbgPercentage}%
+                        </td>
+                        <td className="py-3 px-4 text-gray-700">
+                          {wo.pbgDuration} months
+                        </td>
+                        <td className="py-3 px-4 text-center flex justify-center items-center gap-2">
+                          <button
+                            onClick={() => handleEditWorkorder(wo._id)}
+                            className="text-indigo-600 hover:text-indigo-900 p-1 rounded-full hover:bg-indigo-50 transition-colors"
+                            title="Edit Workorder"
+                          >
+                            <FaEdit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteWorkorder(wo._id)}
+                            className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-50 transition-colors"
+                            title="Delete Workorder"
+                          >
+                            <FaTrash size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar */}
-      <Sidebar title="Company" />
+      {/* Sidebar */}
+      <div className={ShowTablePopUp ? "hidden md:block" : "block md:block"}>
+        <Sidebar title="Company" />
+      </div>
+
 
       {/* Main Content */}
       <main className="companies-main flex-1 px-2 sm:px-4 md:px-8 py-6">
@@ -215,9 +446,7 @@ export default function Companies() {
                 <th className="py-3 px-4 font-semibold tracking-wide">
                   Comapny ID
                 </th>
-                <th className="py-3 px-4 font-semibold tracking-wide">
-                  Name
-                </th>
+                <th className="py-3 px-4 font-semibold tracking-wide">Name</th>
                 <th className="py-3 px-4 font-semibold tracking-wide">
                   GST Number
                 </th>
@@ -247,11 +476,20 @@ export default function Companies() {
                 </tr>
               ) : (
                 paginatedCompanies.map((company) => (
-                  <tr key={company._id} className="hover:bg-blue-50 transition text-center">
+                  <tr
+                    key={company._id}
+                    className="hover:bg-blue-50 transition text-center"
+                  >
                     <td className="py-3 px-4 text-gray-800 font-medium">
                       {company.company_id}
                     </td>
-                    <td className="py-3 px-4 text-gray-800 font-medium">
+                    <td
+                      className="py-3 px-4 text-gray-800 font-medium cursor-pointer hover:underline"
+                      onClick={() => {
+                        setShowTablePopUp(true);
+                        handleCompanyClick(company);
+                      }}
+                    >
                       {company.name}
                     </td>
                     <td className="py-3 px-4 text-gray-700">

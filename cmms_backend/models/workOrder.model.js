@@ -25,15 +25,6 @@ const WorkOrderSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  boqNumber: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "BOQ",
-    required: true,
-  }],
-  workorderAmount: {
-    type: Number,
-    required: true,
-  },
   woValidityDate: {
     type: Date,
     required: true,

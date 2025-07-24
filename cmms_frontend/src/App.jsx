@@ -7,7 +7,6 @@ import Dashboard from "./Components/Dashboard/Dashboard";
 import Companies from "./Components/Companies/Companies";
 import AdminProfile from "./Components/AdminProfile/AdminProfile";
 import ContractorBills from "./Components/ContractorBills/ContractorBills";
-import ManageWorkorder from "./Components/Workorder/ManageWorkorder";
 import ManageBOQ from "./Components/Boq/ManageBOQ";
 import WorkOrder from "./Components/Workorder/Workorder";
 import ManageMaterials from "./Components/Materials/ManageMaterials";
@@ -58,15 +57,6 @@ function App() {
         />
 
         <Route
-          path="/manage-workorder"
-          element={
-            <ProtectedRoute>
-              <ManageWorkorder />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
           path="/workorders"
           element={
             <ProtectedRoute>
@@ -75,14 +65,6 @@ function App() {
           }
         />
         <Route path="/workorders/:id" element={<WorkOrder />} />
-        <Route
-          path="/manage-workorder/:id"
-          element={
-            <ProtectedRoute>
-              <ManageWorkorder />
-            </ProtectedRoute>
-          }
-        />
 
         <Route
           path="/manage-boq"

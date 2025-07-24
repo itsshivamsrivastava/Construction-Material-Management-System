@@ -30,7 +30,6 @@ const WorkOrder = () => {
     woNumber: "",
     woDate: "",
     projectName: "",
-    boqNumber: "",
     company: "",
     woValidityDate: "",
     woCompletionDate: "",
@@ -85,7 +84,6 @@ const WorkOrder = () => {
         woNumber: data.woNumber || "",
         woDate: data.woDate ? data.woDate.slice(0, 10) : "",
         projectName: data.projectName || "",
-        boqNumber: data.boqNumber || "",
         company: typeof data.company === "object" && data.company !== null ? data.company._id : data.company || "",
         woValidityDate: data.woValidityDate ? data.woValidityDate.slice(0, 10) : "",
         woCompletionDate: data.woCompletionDate ? data.woCompletionDate.slice(0, 10) : "",
@@ -154,7 +152,6 @@ const WorkOrder = () => {
         woNumber: "",
         woDate: "",
         projectName: "",
-        boqNumber: "",
         company: "",
         woValidityDate: "",
         woCompletionDate: "",
@@ -177,7 +174,6 @@ const WorkOrder = () => {
       woNumber: workorder.woNumber || "",
       woDate: workorder.woDate ? workorder.woDate.slice(0, 10) : "",
       projectName: workorder.projectName || "",
-      boqNumber: workorder.boqNumber || "",
       company: typeof workorder.company === "object" && workorder.company !== null ? workorder.company._id : workorder.company || "",
       woValidityDate: workorder.woValidityDate ? workorder.woValidityDate.slice(0, 10) : "",
       woCompletionDate: workorder.woCompletionDate ? workorder.woCompletionDate.slice(0, 10) : "",
@@ -197,7 +193,6 @@ const WorkOrder = () => {
       woNumber: workorder.woNumber || "",
       woDate: workorder.woDate ? workorder.woDate.slice(0, 10) : "",
       projectName: workorder.projectName || "",
-      boqNumber: workorder.boqNumber || "",
       company: workorder.company || "",
       woValidityDate: workorder.woValidityDate ? workorder.woValidityDate.slice(0, 10) : "",
       woCompletionDate: workorder.woCompletionDate ? workorder.woCompletionDate.slice(0, 10) : "",
@@ -236,7 +231,6 @@ const WorkOrder = () => {
       woNumber: "",
       woDate: "",
       projectName: "",
-      boqNumber: "",
       company: "",
       woValidityDate: "",
       woCompletionDate: "",
@@ -253,13 +247,6 @@ const WorkOrder = () => {
       setSortBy(field);
       setSortOrder("asc");
     }
-  };
-
-  // Helper functions
-  const getBoqNumberLabel = (boqId) => {
-    const id = Array.isArray(boqId) ? boqId[0] : boqId;
-    const boq = boqOptions.find((b) => b._id === id);
-    return boq ? boq.boqNumber : id;
   };
 
   const getCompanyName = (companyObjOrId) => {
@@ -307,27 +294,6 @@ const WorkOrder = () => {
                       {companyOptions.map((company) => (
                         <option key={company._id} value={company._id}>
                           {company.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      BOQ Number *
-                    </label>
-                    <select
-                      name="boqNumber"
-                      value={formData.boqNumber}
-                      onChange={handleInputChange}
-                      disabled={viewingId}
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-                    >
-                      <option value="">Select BOQ</option>
-                      {boqOptions.map((boq) => (
-                        <option key={boq._id} value={boq._id}>
-                          {boq.boqNumber}
                         </option>
                       ))}
                     </select>
@@ -599,7 +565,6 @@ const WorkOrder = () => {
                         {sortBy === 'projectName' && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}
                   </button>
                     </th>
-                    <th className="px-2 py-3 min-w-[120px] text-center">BOQ</th>
                     <th className="px-2 py-3 min-w-[120px] text-center">WO Date</th>
                     <th className="px-2 py-3 min-w-[140px] text-center">WO Validity Date</th>
                     <th className="px-2 py-3 min-w-[160px] text-center">WO Completion Date</th>
@@ -631,7 +596,6 @@ const WorkOrder = () => {
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.clientNickName}</td>
                         <td className="px-2 py-2 text-gray-600 text-center">{getCompanyName(workorder.company)}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.projectName}</td>
-                        <td className="px-2 py-2 text-gray-600 text-center">{getBoqNumberLabel(workorder.boqNumber)}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.woDate ? workorder.woDate.slice(0, 10) : ""}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.woValidityDate ? workorder.woValidityDate.slice(0, 10) : ""}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.woCompletionDate ? workorder.woCompletionDate.slice(0, 10) : ""}</td>
