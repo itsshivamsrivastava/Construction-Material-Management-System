@@ -83,7 +83,6 @@ const ManageBOQ = () => {
     try {
       const res = await axios.get("http://localhost:3000/api/workorder/getAll");
       setWorkorders(res.data);
-      console.log(res.data);
     } catch (err) {
       console.log(err);
       setError("Failed to fetch WorkOrders!");

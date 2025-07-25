@@ -80,6 +80,14 @@ const getBOQByWorkorder = async (req, res) => {
     try {
         const workorderId = req.params.workorderId;
         const boqs = await BOQ.find({ workorder: workorderId });
+        if (!boqs || boqs.length === 0) {
+            return res.status(404).json({ message: "No BOQs found for this workorder" });
+        }
+         // Populate workorder field in each BOQ
+        for (let boq of boqs) {
+            await boq.populate('workorder');
+        }
+        console.log("BOQs after population:", boqs);
         res.status(200).json(boqs);
     } catch (error) {
         res.status(400).json({ message: error.message });
