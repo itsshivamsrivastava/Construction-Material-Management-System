@@ -1,15 +1,8 @@
-import React, { useEffect, useState } from "react";
-import {
-  FaEdit,
-  FaTrash,
-  FaPlus,
-  FaSave,
-  FaTimes,
-  FaEye,
-} from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
 import "./Companies.css";
 import Sidebar from "../Sidebar/Sidebar";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaEdit, FaTrash, FaTimes } from "react-icons/fa";
 
 const API_BASE = "http://localhost:3000/api/company";
 const WORKORDER_API_BASE = "http://localhost:3000/api/workorder";
@@ -23,21 +16,17 @@ export default function Companies() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("company_id");
+  const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
-
   const recordsPerPage = 5;
-
-  // State for Workorder Modal
-  const [ShowTablePopUp, setShowTablePopUp] = useState(false);
-  const [workorders, setWorkorders] = useState([]);
+  const navigate = useNavigate();
   const [showWorkordersModal, setShowWorkordersModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [companyWorkorders, setCompanyWorkorders] = useState([]);
   const [workordersLoading, setWorkordersLoading] = useState(false);
   const [workordersError, setWorkordersError] = useState("");
-  const [workordersSuccess, setWorkordersSuccess] = useState("");
-
-  const navigate = useNavigate();
 
   // Fetch companies
   const fetchCompanies = async () => {
@@ -48,9 +37,8 @@ export default function Companies() {
       const data = await res.json();
       setCompanies(data);
       setCurrentPage(1); // Reset to first page on fetch
-    } catch (err) {
+    } catch {
       setError("Failed to fetch companies");
-      console.error("Fetch companies error:", err);
     }
     setLoading(false);
   };
@@ -134,230 +122,87 @@ export default function Companies() {
 
   // Handle cancel edit
   const handleCancel = () => {
-    setShowTablePopUp(false);
     setForm(initialForm);
     setEditingId(null);
     setError("");
     setSuccess("");
   };
 
-  // Pagination logic
-  const totalPages = Math.ceil(companies.length / recordsPerPage);
-  const paginatedCompanies = companies.slice(
-    (currentPage - 1) * recordsPerPage,
-    currentPage * recordsPerPage
-  );
-
-  // Fetch workorders by company
-  const fetchWorkordersByCompany = async (companyId) => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch(`${WORKORDER_API_BASE}/byCompany/${companyId}`);
-      const data = await res.json();
-      setWorkorders(data);
-      setShowTablePopUp(true);
-    } catch (err) {
-      setError("Failed to fetch workorders");
-      console.error("Fetch workorders error:", err);
-    }
-    setLoading(false);
-  };
-
-  // Handle click on company name to show workorders
-  const handleCompanyClick = (company) => {
+  // Fetch workorders for a company
+  const handleCompanyNameClick = async (company) => {
     setSelectedCompany(company);
-    fetchWorkordersByCompany(company._id);
-    setShowTablePopUp(true);
-  };
-
-  // Handle edit workorder (redirect to Workorder page)
-  const handleEditWorkorder = (workorderId) => {
-    setShowWorkordersModal(false); // Close the modal
-    navigate(`/workorders/${workorderId}`);
-  };
-
-  // Handle delete workorder
-  const handleDeleteWorkorder = async (workorderId) => {
-    if (!window.confirm("Are you sure you want to delete this workorder?"))
-      return;
+    setShowWorkordersModal(true);
     setWorkordersLoading(true);
     setWorkordersError("");
-    setWorkordersSuccess("");
     try {
-      const res = await fetch(`${WORKORDER_API_BASE}/delete/${workorderId}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error("Delete failed");
-      setWorkordersSuccess("Workorder deleted successfully");
-      fetchWorkordersByCompany(selectedCompany._id);
+      const res = await fetch(`${WORKORDER_API_BASE}/byCompany/${company._id}`);
+      if (!res.ok) throw new Error("Failed to fetch workorders");
+      const data = await res.json();
+      setCompanyWorkorders(data);
     } catch (err) {
-      setWorkordersError(err.message || "Delete failed");
+      setWorkordersError(err.message || "Failed to fetch workorders");
+      setCompanyWorkorders([]);
     }
     setWorkordersLoading(false);
   };
 
+  // Delete workorder from modal
+  const handleDeleteWorkorder = async (workorderId) => {
+    if (!window.confirm("Are you sure you want to delete this workorder?")) return;
+    setWorkordersLoading(true);
+    setWorkordersError("");
+    try {
+      const res = await fetch(`${WORKORDER_API_BASE}/delete/${workorderId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete workorder");
+      setCompanyWorkorders((prev) => prev.filter((wo) => wo._id !== workorderId));
+    } catch (err) {
+      setWorkordersError(err.message || "Failed to delete workorder");
+    }
+    setWorkordersLoading(false);
+  };
+
+  // Edit workorder from modal
+  const handleEditWorkorder = (workorderId) => {
+    setShowWorkordersModal(false);
+    navigate(`/workorders/${workorderId}`);
+  };
+
+  const filteredCompanies = companies.filter(
+    (company) =>
+      company.company_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.gstNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.address.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const sortedCompanies = [...filteredCompanies].sort((a, b) => {
+    const aValue = a[sortBy]?.toString().toLowerCase();
+    const bValue = b[sortBy]?.toString().toLowerCase();
+    return sortOrder === "asc"
+      ? aValue.localeCompare(bValue)
+      : bValue.localeCompare(aValue);
+  });
+
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(field);
+      setSortOrder("asc");
+    }
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(sortedCompanies.length / recordsPerPage);
+  const paginatedCompanies = sortedCompanies.slice(
+    (currentPage - 1) * recordsPerPage,
+    currentPage * recordsPerPage
+  );
+
   return (
     <div className="companies-page-container flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      {/* Modal for showing workorders by company */}
-      {ShowTablePopUp && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 modal-backdrop">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto p-6">
-            <div className="">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Work Orders for{" "}
-                  {selectedCompany
-                    ? `${selectedCompany.name} (${selectedCompany.company_id})`
-                    : "<company_name> (<company_id>)"}
-                </h2>
-                <button
-                  onClick={handleCancel}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <FaTimes size={24} />
-                </button>
-              </div>
-
-              {workordersSuccess && (
-                <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg animate-fadeIn">
-                  {workordersSuccess}
-                </div>
-              )}
-              {workordersError && (
-                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg animate-fadeIn">
-                  {workordersError}
-                </div>
-              )}
-
-              {/* Workorder Table */}
-              <div className="overflow-x-auto rounded-lg shadow-lg bg-white/90 border border-blue-100">
-                <table className="w-full divide-y divide-blue-200">
-                  <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
-                    <tr>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[140px]">
-                        WO Number
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[160px]">
-                        Company ID
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[160px]">
-                        Client Name
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[140px]">
-                        Client Nick Name
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[180px]">
-                        Project Name
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[120px]">
-                        WO Date
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[140px]">
-                        WO Validity Date
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[160px]">
-                        WO Completion Date
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[100px]">
-                        Retention %
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[100px]">
-                        PBG %
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[120px]">
-                        PBG Duration
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider min-w-[120px]">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-blue-100">
-                    {workordersLoading ? (
-                    <tr>
-                      <td colSpan="6" className="text-center py-4 text-blue-500">Loading Workorders...</td>
-                    </tr>
-                  ) : workorders.length === 0 ? (
-                    <tr>
-                      <td colSpan="6" className="text-center py-4 text-gray-400">No workorders found.</td>
-                    </tr>
-                  ) : (
-                    workorders.map((wo) => (
-                      <tr
-                        key={wo._id}
-                        className="hover:bg-blue-50 transition text-center"
-                      >
-                        <td className="py-3 px-4 text-gray-800 font-medium">
-                          {wo.woNumber}
-                        </td>
-                        <td className="py-3 px-4 text-gray-800 font-medium">
-                          {wo.company.company_id}
-                        </td>
-                        <td className="py-3 px-4 text-gray-700">
-                          {wo.clientName}
-                        </td>
-                        <td className="py-3 px-4 text-gray-700">
-                          {wo.clientNickName}
-                        </td>
-                        <td className="py-3 px-4 text-gray-700">
-                          {wo.projectName}
-                        </td>
-                        <td className="py-3 px-4 text-gray-700">
-                          {wo.woDate ? wo.woDate.slice(0, 10) : ""}
-                        </td>
-                        <td className="py-3 px-4 text-gray-700">
-                          {wo.woValidityDate
-                            ? wo.woValidityDate.slice(0, 10)
-                            : ""}
-                        </td>
-                        <td className="py-3 px-4 text-gray-700">
-                          {wo.woCompletionDate
-                            ? wo.woCompletionDate.slice(0, 10)
-                            : ""}
-                        </td>
-                        <td className="py-3 px-4 text-gray-700">
-                          {wo.retentionPercentage}%
-                        </td>
-                        <td className="py-3 px-4 text-gray-700">
-                          {wo.pbgPercentage}%
-                        </td>
-                        <td className="py-3 px-4 text-gray-700">
-                          {wo.pbgDuration} months
-                        </td>
-                        <td className="py-3 px-4 text-center flex justify-center items-center gap-2">
-                          <button
-                            onClick={() => handleEditWorkorder(wo._id)}
-                            className="text-indigo-600 hover:text-indigo-900 p-1 rounded-full hover:bg-indigo-50 transition-colors"
-                            title="Edit Workorder"
-                          >
-                            <FaEdit size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteWorkorder(wo._id)}
-                            className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-50 transition-colors"
-                            title="Delete Workorder"
-                          >
-                            <FaTrash size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Sidebar */}
-      {/* Sidebar */}
-      <div className={ShowTablePopUp ? "hidden md:block" : "block md:block"}>
-        <Sidebar title="Company" />
-      </div>
-
+      <Sidebar title="Company" />
 
       {/* Main Content */}
       <main className="companies-main flex-1 px-2 sm:px-4 md:px-8 py-6">
@@ -369,6 +214,25 @@ export default function Companies() {
             Add, view, and manage all your companies easily.
           </p>
         </div>
+        <div className="dashboard-and-search-btn items-center flex flex-col sm:flex-row gap-4 sm:w-auto my-5 mx-2">
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="w-50 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+          >
+            Dashboard
+          </button>
+          {/* Search */}
+          <div className="w-50 sm:w-64">
+            <input
+              type="text"
+              placeholder="Search companies..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
         <form
           onSubmit={handleSubmit}
           className="bg-white/90 shadow-xl rounded-2xl p-6 md:p-8 mb-10 flex flex-col md:flex-row gap-4 md:gap-6 items-center border border-blue-100"
@@ -444,11 +308,37 @@ export default function Companies() {
             <thead className="text-center bg-gradient-to-r from-blue-600 to-blue-400 text-white">
               <tr>
                 <th className="py-3 px-4 font-semibold tracking-wide">
-                  Comapny ID
+                  <button
+                    onClick={() => handleSort("company_id")}
+                    className="items-center gap-1 hover:text-blue-200"
+                  >
+                    Company ID
+                    {sortBy === "company_id" && (
+                      <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+                    )}
+                  </button>
                 </th>
-                <th className="py-3 px-4 font-semibold tracking-wide">Name</th>
                 <th className="py-3 px-4 font-semibold tracking-wide">
-                  GST Number
+                  <button
+                    onClick={() => handleSort("name")}
+                    className="items-center gap-1 hover:text-blue-200"
+                  >
+                    Name
+                  </button>
+                  {sortBy === "name" && (
+                    <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+                  )}
+                </th>
+                <th className="py-3 px-4 font-semibold tracking-wide">
+                  <button
+                    onClick={() => handleSort("gstNumber")}
+                    className="items-center gap-1 hover:text-blue-200"
+                  >
+                    GST Number
+                  </button>
+                  {sortBy === "gstNumber" && (
+                    <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+                  )}
                 </th>
                 <th className="py-3 px-4 font-semibold tracking-wide">
                   Address
@@ -483,14 +373,13 @@ export default function Companies() {
                     <td className="py-3 px-4 text-gray-800 font-medium">
                       {company.company_id}
                     </td>
-                    <td
-                      className="py-3 px-4 text-gray-800 font-medium cursor-pointer hover:underline"
-                      onClick={() => {
-                        setShowTablePopUp(true);
-                        handleCompanyClick(company);
-                      }}
-                    >
-                      {company.name}
+                    <td className="py-3 px-4 text-gray-800 font-medium">
+                      <button
+                        className="text-blue-700 hover:underline hover:text-blue-900 font-semibold"
+                        onClick={() => handleCompanyNameClick(company)}
+                      >
+                        {company.name}
+                      </button>
                     </td>
                     <td className="py-3 px-4 text-gray-700">
                       {company.gstNumber}
@@ -556,6 +445,86 @@ export default function Companies() {
             </div>
           )}
         </div>
+
+        {/* Workorders Modal */}
+        {showWorkordersModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-10 modal-backdrop">
+            <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-5xl relative">
+              <button
+                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+                onClick={() => setShowWorkordersModal(false)}
+                title="Close"
+              >
+                <FaTimes size={22} />
+              </button>
+              <h3 className="text-2xl font-bold text-blue-700 mb-4 text-center">
+                Workorders for {selectedCompany?.name}
+              </h3>
+              {workordersLoading ? (
+                <div className="text-center py-8 text-blue-500 font-semibold animate-pulse">Loading...</div>
+              ) : workordersError ? (
+                <div className="text-center text-red-600 mb-4">{workordersError}</div>
+              ) : companyWorkorders.length === 0 ? (
+                <div className="text-center text-gray-500 py-8">No workorders found for this company.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-blue-200">
+                    <thead className="bg-blue-100">
+                      <tr>
+                        <th className="py-2 px-3 text-center">WO Number</th>
+                        <th className="py-2 px-3 text-center">Company ID</th>
+                        <th className="py-2 px-3 min-w-[200px] text-center">Client Name</th>
+                        <th className="py-2 px-3 min-w-[150px] text-center">Client Nickname</th>
+                        <th className="py-2 px-3 min-w-[200px] text-center">Project Name</th>
+                        <th className="py-2 px-3 min-w-[120px] text-center">WO Date</th>
+                        <th className="py-2 px-3 min-w-[120px] text-center">WO Validity Date</th>
+                        <th className="py-2 px-3 min-w-[150px] text-center">WO Completion Date</th>
+                        <th className="py-2 px-3 min-w-[120px] text-center">Retention %</th>
+                        <th className="py-2 px-3 min-w-[100px] text-center">PBG %</th>
+                        <th className="py-2 px-3 min-w-[120px] text-center">PBG Duration</th>
+                        <th className="py-2 px-3 min-w-[120px] text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {companyWorkorders.map((wo) => (
+                        <tr key={wo._id} className="border-b hover:bg-blue-50">
+                          <td className="py-2 px-3 text-center">{wo.woNumber}</td>
+                          <td className="py-2 px-3 text-center">{wo.company.company_id}</td>
+                          <td className="py-2 px-3 text-center">{wo.clientName}</td>
+                          <td className="py-2 px-3 text-center">{wo.clientNickName}</td>
+                          <td className="py-2 px-3 text-center">{wo.projectName}</td>
+                          <td className="py-2 px-3 text-center">{wo.woDate ? wo.woDate.slice(0,10) : ''}</td>
+                          <td className="py-2 px-3 text-center">{wo.woValidityDate ? wo.woValidityDate.slice(0, 10) : ""}</td>
+                          <td className="py-2 px-3 text-center">{wo.woCompletionDate ? wo.woCompletionDate.slice(0, 10) : ""}</td>
+                          <td className="py-2 px-3 text-center">{wo.retentionPercentage}</td>
+                          <td className="py-2 px-3 text-center">{wo.pbgPercentage}</td>
+                          <td className="py-2 px-3 text-center">{wo.pbgDuration}</td>
+                          <td className="py-2 px-3 text-center flex gap-2">
+                            <button
+                              className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors"
+                              title="Edit"
+                              onClick={() => handleEditWorkorder(wo._id)}
+                            >
+                              <FaEdit size={16} />
+                            </button>
+                            <button
+                              className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete"
+                              onClick={() => handleDeleteWorkorder(wo._id)}
+                            >
+                              <FaTrash size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );
