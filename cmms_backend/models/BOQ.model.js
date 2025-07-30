@@ -4,6 +4,7 @@ const BOQSchema = new mongoose.Schema({
   workorder: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "WorkOrder",
+    required: true,
   },
   boqNumber: {
     type: String,

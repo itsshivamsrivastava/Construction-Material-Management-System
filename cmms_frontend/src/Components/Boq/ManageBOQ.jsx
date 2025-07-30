@@ -14,6 +14,7 @@ import {
 
 const initialForm = {
   boqNumber: "",
+  workorder: "",
   boqItemsDesc: "",
   boqUnit: "",
   boqQuantity: "",
@@ -23,6 +24,7 @@ const initialForm = {
 
 const ManageBOQ = () => {
   const [boqs, setBoqs] = useState([]);
+  const [workorders, setWorkorders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -103,12 +105,24 @@ const ManageBOQ = () => {
 
   useEffect(() => {
     fetchBoqs();
+    fetchWorkorders();
     if (id) {
       setEditingId(id);
       fetchBOQ(id);
       setShowForm(true);
     }
   }, [id]);
+
+  const fetchWorkorders = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/api/workorder/getAll");
+      setWorkorders(res.data);
+      console.log("Fetched workorders:", res.data);
+    } catch (err) {
+      console.log(err);
+      setError("Failed to fetch workorders");
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -160,9 +174,12 @@ const ManageBOQ = () => {
         setSuccess("BOQ created successfully!");
       }
 
+      console.log("Form data submitted:", formData);
+      console.log("Initial form data:", initialForm);
       setShowForm(false);
       setEditingId(null);
       setFormData(initialForm);
+      console.log("Form reset to initial state:", initialForm);
       fetchBoqs();
     } catch (err) {
       setError(err.response?.data?.message || "Operation failed");
@@ -172,14 +189,20 @@ const ManageBOQ = () => {
   };
 
   const handleEdit = (boq) => {
-    setFormData(boq);
+    setFormData({
+      ...boq,
+      workorder: boq.workorder ? boq.workorder._id : "",
+    });
     setEditingId(boq._id);
     setShowForm(true);
     setViewingId(null);
   };
 
   const handleView = (boq) => {
-    setFormData(boq);
+    setFormData({
+      ...boq,
+      workorder: boq.workorder ? boq.workorder._id : "",
+    });
     setViewingId(boq._id);
     setEditingId(null);
     setShowForm(true);
@@ -327,6 +350,28 @@ const ManageBOQ = () => {
 
                       <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Work Order *
+                        </label>
+
+                        <select
+                          name="workorder"
+                          value={formData.workorder}
+                          onChange={handleInputChange}
+                          disabled={viewingId}
+                          required
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                        >
+                          <option value="">Select Work Order</option>
+                          {workorders.map((wo) => (
+                            <option key={wo._id} value={wo._id}>
+                              {wo.woNumber} - {wo.projectName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                           BOQ Item Unit *
                         </label>
                         <select
@@ -468,6 +513,17 @@ const ManageBOQ = () => {
                         )}
                       </button>
                     </th>
+                    <th className="px-4 py-3 min-w-[135px] text-center">
+                      <button
+                        onClick={() => handleSort("workOrder")}
+                        className="flex items-center gap-1 hover:text-blue-600"
+                      >
+                        WorkOrder No.
+                        {sortBy === "workOrder" && (
+                          <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+                        )}
+                      </button>
+                    </th>
                     <th className="px-2 py-3 min-w-[200px] text-center">
                       BOQ Item Description
                     </th>
@@ -542,6 +598,9 @@ const ManageBOQ = () => {
                       >
                         <td className="px-2 py-2 font-medium text-blue-600 text-center">
                           {boq.boqNumber}
+                        </td>
+                        <td className="px-2 py-2 font-medium text-blue-700 text-center cursor-pointer hover:text-blue-900">
+                          {boq.workorder ? boq.workorder.woNumber : '-'}
                         </td>
                         <td className="px-2 py-2 text-gray-700 text-justify">
                           {boq.boqItemsDesc}
