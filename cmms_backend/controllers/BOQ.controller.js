@@ -12,30 +12,16 @@ const createBOQ = async (req, res) => {
             boqAmount: req.body.boqAmount,
         });
         const savedBOQ = await boq.save();
-        if (!savedBOQ){
-            return res.status(400).json({message: "BOQ items not saved"});
-        }
-        res.status(200).json({message: "BOQ items saved successfully"});
+        res.status(201).json(savedBOQ);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
 
 const updateBOQ = async (req, res) => {
+    const boq_id = req.params.id;
     try {
-        const updatedBOQ = await BOQ.findByIdAndUpdate(
-            req.params.id,
-            {
-                workorder: req.body.workorder,
-                boqNumber: req.body.boqNumber,
-                boqItemsDesc: req.body.boqItemsDesc,
-                boqUnit: req.body.boqUnit,
-                boqQuantity: req.body.boqQuantity,
-                boqRate: req.body.boqRate,
-                boqAmount: req.body.boqAmount,
-            },
-            { new: true }
-        );
+        const updatedBOQ = await BOQ.findByIdAndUpdate(boq_id, req.body, { new: true, runValidators: true });
         if (!updatedBOQ) {
             return res.status(404).json({ message: "BOQ not found" });
         }

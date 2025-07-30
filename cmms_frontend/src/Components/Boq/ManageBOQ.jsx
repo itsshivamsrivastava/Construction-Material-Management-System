@@ -15,7 +15,6 @@ import {
 const initialForm = {
   boqNumber: "",
   boqItemsDesc: "",
-  workOrder: "",
   boqUnit: "",
   boqQuantity: "",
   boqRate: "",
@@ -24,7 +23,6 @@ const initialForm = {
 
 const ManageBOQ = () => {
   const [boqs, setBoqs] = useState([]);
-  const [workorders, setWorkorders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -78,17 +76,6 @@ const ManageBOQ = () => {
     currentPage * boqPerPage + boqPerPage
   );
 
-  // Fetch all Companies Data
-  const fetchWorkorders = async () => {
-    try {
-      const res = await axios.get("http://localhost:3000/api/workorder/getAll");
-      setWorkorders(res.data);
-    } catch (err) {
-      console.log(err);
-      setError("Failed to fetch WorkOrders!");
-    }
-  };
-
   // Fetch all BOQ data
   const fetchBoqs = async () => {
     setLoading(true);
@@ -115,7 +102,6 @@ const ManageBOQ = () => {
   };
 
   useEffect(() => {
-    fetchWorkorders();
     fetchBoqs();
     if (id) {
       setEditingId(id);
@@ -243,9 +229,8 @@ const ManageBOQ = () => {
           showForm ? "w-full" : "md:w-[calc(100%-16rem)]"
         }`}
       >
-        {" "}
         {/* Adjust width dynamically */}
-        <div className="main-div max-w-4xl mx-auto">
+        <div className="main-div max-w-5xl mx-auto">
           {/* Header */}
           <div className="mb-8 text-center">
             <h1 className="text-3xl md:text-4xl font-extrabold text-blue-700 mb-2 drop-shadow-lg">
@@ -383,26 +368,6 @@ const ManageBOQ = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          WorkOrder No. *
-                        </label>
-                        <select
-                          name="workOrder"
-                          value={formData.workOrder}
-                          onChange={handleInputChange}
-                          disabled={viewingId}
-                          required
-                          className="form-control"
-                        >
-                          <option value="">Select WorkOrder No.</option>
-                          {workorders.map((wo) => (
-                            <option key={wo._id} value={wo._id}>
-                              {wo.woNumber}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
                           BOQ Item Quantity *
                         </label>
                         <input
@@ -484,25 +449,12 @@ const ManageBOQ = () => {
             </div>
           )}
 
-          {/* BOQ List - Responsive Table (Workorder style) */}
+          {/* BOQ List */}
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             <div className="overflow-x-auto table-responsive">
               <table className="w-full text-sm text-left boq-table">
                 <thead className="bg-gray-200 border-b border-gray-200">
                   <tr>
-                    <th className="px-2 py-3 min-w-[140px] text-center">
-                      <button
-                        onClick={() => handleSort("workOrder")}
-                        className="items-center gap-1 hover:text-blue-600 sort-indicator"
-                      >
-                        WorkOrder No.
-                        {sortBy === "workOrder" && (
-                          <span className="sort-arrow">
-                            {sortOrder === "asc" ? "↑" : "↓"}
-                          </span>
-                        )}
-                      </button>
-                    </th>
                     <th className="px-2 py-3 min-w-[140px] text-center">
                       <button
                         onClick={() => handleSort("boqNumber")}
@@ -588,12 +540,6 @@ const ManageBOQ = () => {
                         key={boq._id}
                         className="boq-row border-b border-gray-100 hover:bg-gray-50 odd:bg-white even:bg-gray-100"
                       >
-                        <td className="px-2 py-2 text-gray-700 text-center">
-                          {
-                            workorders.find((wo) => wo._id === boq.workOrder)
-                              ?.woNumber
-                          }
-                        </td>
                         <td className="px-2 py-2 font-medium text-blue-600 text-center">
                           {boq.boqNumber}
                         </td>

@@ -17,7 +17,6 @@ const WorkOrder = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("woNumber");
   const [sortOrder, setSortOrder] = useState("asc");
-  const [boqOptions, setBoqOptions] = useState([]);
   const [companyOptions, setCompanyOptions] = useState([]);
 
   const navigate = useNavigate();
@@ -100,11 +99,9 @@ const WorkOrder = () => {
   // Fetch dropdown options
   const fetchOptions = async () => {
     try {
-      const [boqRes, companyRes] = await Promise.all([
-        axios.get("http://localhost:3000/api/boq/getAll"),
+      const [companyRes] = await Promise.all([
         axios.get("http://localhost:3000/api/company/getCompany")
       ]);
-      setBoqOptions(boqRes.data);
       setCompanyOptions(companyRes.data);
     } catch (err) {
       console.error("Failed to fetch options:", err);
