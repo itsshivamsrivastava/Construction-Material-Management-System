@@ -178,13 +178,9 @@ const ManageBOQ = () => {
         await axios.post("http://localhost:3000/api/boq/create", formData);
         setSuccess("BOQ created successfully!");
       }
-
-      console.log("Form data submitted:", formData);
-      console.log("Initial form data:", initialForm);
       setShowForm(false);
       setEditingId(null);
       setFormData(initialForm);
-      console.log("Form reset to initial state:", initialForm);
       fetchBoqs();
     } catch (err) {
       setError(err.response?.data?.message || "Operation failed");

@@ -6,19 +6,18 @@ import "./ManageMaterials.css";
 import { useNavigate } from "react-router-dom";
 
 const initialForm = {
-  workOrder: "",
   materialName: "",
   make: "",
   packSize: "",
   coefficient: "",
   totalQuantity: "",
   totalQuantityNos: "",
-  rateFreezed: ""
+  rateFreezed: "",
+  boq: ""
 };
 
 const ManageMaterials = () => {
   const [materials, setMaterials] = useState([]);
-  const [workorders, setWorkorders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -30,8 +29,7 @@ const ManageMaterials = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("materialName");
   const [sortOrder, setSortOrder] = useState("asc");
-  const [selectedWorkorder, setSelectedWorkorder] = useState(null);
-  const [workorderDetails, setWorkorderDetails] = useState(null);
+  const [boqOptions, setBoqOptions] = useState([]);
   const navigate = useNavigate();
 
   const materialsPerPage = 6;
@@ -54,7 +52,6 @@ const ManageMaterials = () => {
 
   useEffect(() => {
     fetchMaterials();
-    fetchWorkorders();
   }, []);
 
   const fetchMaterials = async () => {
@@ -69,29 +66,35 @@ const ManageMaterials = () => {
     setLoading(false);
   };
 
-  const fetchWorkorders = async () => {
-    try {
-      const res = await axios.get("http://localhost:3000/api/workorder/getAll");
-      setWorkorders(res.data);
-    } catch (err) {
-      console.log(err);
-      setError("Failed to fetch workorders");
-    }
-  };
-
   const fetchMaterial = async (id) => {
     setLoading(true);
     setError("");
     try {
       const res = await axios.get(`http://localhost:3000/api/material/get/${id}`);
-      setFormData(res.data);
+      const data = res.data;
+      setFormData({
+        ...data,
+        boq: data.boq ? data.boq._id : ""
+      });
     } catch {
       setError("Failed to fetch material details");
     }
     setLoading(false);
   };
+
+  const fetchOptions = async () => {
+    try {
+      const [boqRes] = await Promise.all([
+        axios.get("http://localhost:3000/api/boq/getAll")
+      ]);
+      setBoqOptions(boqRes.data);
+    } catch (err) {
+      console.error("Failed to fetch options:", err)
+    }
+  };
   
   useEffect(() => {
+    fetchOptions();
     if (viewingId) {
       fetchMaterial(viewingId);
     }
@@ -128,7 +131,10 @@ const ManageMaterials = () => {
   };
 
   const handleEdit = (material) => {
-    setFormData(material);
+    setFormData({
+        ...material,
+        boq: material.boq ? material.boq._id : ""
+      });
     setEditingId(material._id);
     setShowForm(true);
     setViewingId(null);
@@ -172,33 +178,19 @@ const ManageMaterials = () => {
     }
   };
 
+  const getBoqNumber = (boqObjOrId) => {
+    if (!boqObjOrId) return "";
+    if (typeof boqObjOrId === "object" && boqObjOrId.boqNumber)
+      return boqObjOrId.boqNumber;
+    const boq = boqOptions.find((b) => b._id === boqObjOrId);
+    return boq ? boq.boqNumber : boqObjOrId;
+  };
+
   // Summary
   const totalMaterials = materials.length;
   const totalQuantity = materials.reduce((sum, m) => sum + (parseFloat(m.totalQuantity) || 0), 0);
   const totalValue = materials.reduce((sum, m) => sum + ((parseFloat(m.totalQuantity) || 0) * (parseFloat(m.rateFreezed) || 0)), 0);
   const uniqueMakes = new Set(materials.map(m => m.make)).size;
-
-  // Fetch workorder details for modal
-  const fetchWorkorderDetails = async (id) => {
-    try {
-      const res = await axios.get(`http://localhost:3000/api/workorder/get/${id}`);
-      setWorkorderDetails(res.data);
-    } catch {
-      setWorkorderDetails(null);
-    }
-  };
-
-  // Open modal and fetch details
-  const handleWorkorderClick = (id) => {
-    setSelectedWorkorder(id);
-    fetchWorkorderDetails(id);
-  };
-
-  // Close modal
-  const closeWorkorderModal = () => {
-    setSelectedWorkorder(null);
-    setWorkorderDetails(null);
-  };
 
   return (
     <div className="manage-materials-container flex flex-col md:flex-row">
@@ -217,22 +209,6 @@ const ManageMaterials = () => {
               </div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Workorder *</label>
-                    <select
-                      name="workOrder"
-                      value={formData.workOrder}
-                      onChange={handleInputChange}
-                      disabled={viewingId}
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-                    >
-                      <option value="">Select Workorder</option>
-                      {workorders.map((wo) => (
-                        <option key={wo._id} value={wo._id}>{wo.woNumber}</option>
-                      ))}
-                    </select>
-                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Material Name *</label>
                     <input type="text" name="materialName" value={formData.materialName} onChange={handleInputChange} disabled={viewingId} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100" />
@@ -260,6 +236,26 @@ const ManageMaterials = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Rate Freezed *</label>
                     <input type="number" name="rateFreezed" value={formData.rateFreezed} onChange={handleInputChange} disabled={viewingId} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      BOQ Number *
+                    </label>
+                    <select
+                      name="boq"
+                      value={formData.boq}
+                      onChange={handleInputChange}
+                      disabled={viewingId}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                    >
+                      <option value="">Select BOQ Number</option>
+                      {boqOptions.map((boq) => (
+                        <option key={boq._id} value={boq._id}>
+                          {boq.boqNumber}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 {!viewingId && (
@@ -308,7 +304,6 @@ const ManageMaterials = () => {
               <table className="w-full text-sm text-left">
                 <thead className="bg-gray-200 border-b border-gray-200">
                   <tr>
-                  <th className="px-4 py-3 min-w-[135px] text-center"><button onClick={() => handleSort('workOrder')} className="flex items-center gap-1 hover:text-blue-600">WorkOrder No.{sortBy === 'workOrder' && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}</button></th>
                     <th className="px-2 py-3 min-w-[140px] text-center"><button onClick={() => handleSort('materialName')} className="flex items-center gap-1 hover:text-blue-600">Material Name{sortBy === 'materialName' && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}</button></th>
                     <th className="px-2 py-3 min-w-[120px] text-center"><button onClick={() => handleSort('make')} className="text-centerflex items-center gap-1 hover:text-blue-600">Make{sortBy === 'make' && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}</button></th>
                     <th className="px-2 py-3 min-w-[100px] text-center">Pack Size</th>
@@ -316,6 +311,7 @@ const ManageMaterials = () => {
                     <th className="px-2 py-3 min-w-[120px] text-center">Total Quantity</th>
                     <th className="px-2 py-3 min-w-[120px] text-center">Total Quantity (Nos)</th>
                     <th className="px-2 py-3 min-w-[120px] text-center">Rate Freezed</th>
+                    <th className="px-2 py-3 min-w-[80px] text-center">BOQ No.</th>
                     <th className="px-2 py-3 min-w-[120px] text-center">Actions</th>
                   </tr>
                 </thead>
@@ -327,9 +323,6 @@ const ManageMaterials = () => {
                   ) : (
                     currentMaterials.map((material) => (
                       <tr key={material._id} className={"materials-row border-b border-gray-100 hover:bg-gray-50 odd:bg-white even:bg-gray-100"}>
-                        <td className="px-2 py-2 font-medium text-blue-700 text-center cursor-pointer hover:text-blue-900" onClick={() => handleWorkorderClick(material.workOrder)}>
-                          {workorders.find(wo => wo._id === material.workOrder)?.woNumber}
-                        </td>
                         <td className="px-2 py-2 text-gray-700 text-center">{material.materialName}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{material.make}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{material.packSize}</td>
@@ -337,6 +330,9 @@ const ManageMaterials = () => {
                         <td className="px-2 py-2 text-gray-700 text-center">{material.totalQuantity}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{material.totalQuantityNos}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">₹{material.rateFreezed}</td>
+                        <td className="px-2 py-2 text-gray-700 text-center">
+                          {getBoqNumber(material.boq)}
+                        </td>
                         <td className="px-2 py-2 flex justify-center gap-2">
                           <button onClick={() => handleView(material)} className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors" title="View"><FaEye size={16} /></button>
                           <button onClick={() => handleEdit(material)} className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors" title="Edit"><FaEdit size={16} /></button>
@@ -381,32 +377,6 @@ const ManageMaterials = () => {
           </div>
         </div>
       </main>
-      {selectedWorkorder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 relative">
-            <button onClick={closeWorkorderModal} className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"><FaTimes size={22} /></button>
-            <h2 className="text-xl font-bold mb-4 text-blue-700">Workorder Details</h2>
-            {workorderDetails ? (
-              <div className="space-y-2">
-                <div><span className="font-semibold">WO Number:</span> {workorderDetails.woNumber}</div>
-                <div><span className="font-semibold">Client Name:</span> {workorderDetails.clientName}</div>
-                <div><span className="font-semibold">Project Name:</span> {workorderDetails.projectName}</div>
-                <div><span className="font-semibold">Company:</span> {typeof workorderDetails.company === 'object' ? workorderDetails.company.name : workorderDetails.company}</div>
-                <div><span className="font-semibold">BOQ Number:</span> {workorderDetails.boqNumber}</div>
-                <div><span className="font-semibold">WO Date:</span> {workorderDetails.woDate ? workorderDetails.woDate.slice(0,10) : ''}</div>
-                <div><span className="font-semibold">WO Validity Date:</span> {workorderDetails.woValidityDate ? workorderDetails.woValidityDate.slice(0,10) : ''}</div>
-                <div><span className="font-semibold">WO Completion Date:</span> {workorderDetails.woCompletionDate ? workorderDetails.woCompletionDate.slice(0,10) : ''}</div>
-                <div><span className="font-semibold">Workorder Amount:</span> ₹{workorderDetails.workorderAmount}</div>
-                <div><span className="font-semibold">Retention %:</span> {workorderDetails.retentionPercentage}</div>
-                <div><span className="font-semibold">PBG %:</span> {workorderDetails.pbgPercentage}</div>
-                <div><span className="font-semibold">PBG Duration:</span> {workorderDetails.pbgDuration}</div>
-              </div>
-            ) : (
-              <div>Loading...</div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
