@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../Sidebar/Sidebar";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import {
   FaEdit,
@@ -38,6 +38,8 @@ const ManageBOQ = () => {
 
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const workorderIdFromURL = searchParams.get('workorderId');
 
   // Form state
   const [formData, setFormData] = useState(initialForm);
@@ -96,7 +98,11 @@ const ManageBOQ = () => {
   const fetchBOQ = async (boqId) => {
     try {
       const res = await axios.get(`http://localhost:3000/api/boq/get/${boqId}`);
-      setFormData(res.data);
+      const data = res.data;
+      setFormData({
+        ...data,
+        workorder: data.workorder ? data.workorder._id : workorderIdFromURL || "",
+      });
     } catch (err) {
       setError("Failed to fetch BOQ details");
       console.error(err);
@@ -117,7 +123,6 @@ const ManageBOQ = () => {
     try {
       const res = await axios.get("http://localhost:3000/api/workorder/getAll");
       setWorkorders(res.data);
-      console.log("Fetched workorders:", res.data);
     } catch (err) {
       console.log(err);
       setError("Failed to fetch workorders");
@@ -364,12 +369,29 @@ const ManageBOQ = () => {
                           <option value="">Select Work Order</option>
                           {workorders.map((wo) => (
                             <option key={wo._id} value={wo._id}>
-                              {wo.woNumber} - {wo.projectName}
+                              {wo.woNumber}
                             </option>
                           ))}
                         </select>
                       </div>
+                    </div>
 
+                    <div className="form-group">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        BOQ Item Description *
+                      </label>
+                      <textarea
+                        name="boqItemsDesc"
+                        value={formData.boqItemsDesc}
+                        onChange={handleInputChange}
+                        disabled={viewingId}
+                        required
+                        rows={3}
+                        className="form-control"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           BOQ Item Unit *
@@ -393,24 +415,7 @@ const ManageBOQ = () => {
                           <option value="Set">Set</option>
                         </select>
                       </div>
-                    </div>
 
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        BOQ Item Description *
-                      </label>
-                      <textarea
-                        name="boqItemsDesc"
-                        value={formData.boqItemsDesc}
-                        onChange={handleInputChange}
-                        disabled={viewingId}
-                        required
-                        rows={3}
-                        className="form-control"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           BOQ Item Quantity *
@@ -599,7 +604,7 @@ const ManageBOQ = () => {
                         <td className="px-2 py-2 font-medium text-blue-600 text-center">
                           {boq.boqNumber}
                         </td>
-                        <td className="px-2 py-2 font-medium text-blue-700 text-center cursor-pointer hover:text-blue-900">
+                        <td className="px-2 py-2 font-medium text-gray-700 text-center">
                           {boq.workorder ? boq.workorder.woNumber : '-'}
                         </td>
                         <td className="px-2 py-2 text-gray-700 text-justify">

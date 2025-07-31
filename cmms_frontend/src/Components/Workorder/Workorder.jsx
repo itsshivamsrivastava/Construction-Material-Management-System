@@ -5,6 +5,8 @@ import axios from "axios";
 import { FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaEye } from "react-icons/fa";
 import "./WorkorderStyle.css";
 
+const BOQ_API_BASE = "http://localhost:3000/api/boq";
+
 const WorkOrder = () => {
   const [workorders, setWorkorders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -18,6 +20,12 @@ const WorkOrder = () => {
   const [sortBy, setSortBy] = useState("woNumber");
   const [sortOrder, setSortOrder] = useState("asc");
   const [companyOptions, setCompanyOptions] = useState([]);
+
+  const [showBoqsModel, setShowBoqsModel] = useState(false);
+  const [selectedWorkorder, setSelectedWorkorder] = useState(null);
+  const [workorderBoqs, setWorkorderBoqs] = useState([]);
+  const [workordersLoading, setWorkordersLoading] = useState(false);
+  const [workordersError, setWorkordersError] = useState("");
 
   const navigate = useNavigate();
   const { id } = useParams();
@@ -254,9 +262,48 @@ const WorkOrder = () => {
     return company ? company.name : companyObjOrId;
   };
 
+  // Fetch BOQ for a workorder
+  const handleWorkorderNoClick = async (workorder) => {
+    setSelectedWorkorder(workorder);
+    setShowBoqsModel(true);
+    setWorkordersLoading(true);
+    setWorkordersError("");
+    try {
+      const res = await fetch(`${BOQ_API_BASE}/byWorkorder/${workorder._id}`);
+      if (!res.ok) throw new Error("Failed to fetch workorders");
+      const data = await res.json();
+      setWorkorderBoqs(data);
+    } catch (err) {
+      setWorkordersError(err.message ||"Failed to fetch BOQ's for this workorder!");
+      setWorkorderBoqs([]);
+    }
+    setWorkordersLoading(false);
+  };
+
+  // Delete BOQ from model
+  const handleDeleteBoq = async (boqId) => {
+    if (!window.confirm("Are you sure you want to delete this BOQ?")) return;
+
+    setWorkordersLoading(true);
+    setWorkordersError("");
+    try {
+      const res = await fetch(`${BOQ_API_BASE}/delete/${boqId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete BOQ");
+      setWorkorderBoqs((prev) => prev.filter((boq )=> boq._id !== boqId));
+    } catch (err) {
+      setWorkordersError(err.message || "Failed to delete BOQ");
+    }
+    setWorkordersLoading(false);
+  };
+
+  // Edit BOQ from model
+  const handleEditBoq = (boqId, workorderId) => {
+    setShowBoqsModel(false);
+    navigate(`/manage-boq/${boqId}?workorderId=${workorderId}`);
+  };
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      {/* Modal should be here to overlay everything */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6">
@@ -290,7 +337,7 @@ const WorkOrder = () => {
                       <option value="">Select Company</option>
                       {companyOptions.map((company) => (
                         <option key={company._id} value={company._id}>
-                          {company.name}
+                          {company.company_id} - {company.name}
                         </option>
                       ))}
                     </select>
@@ -588,10 +635,14 @@ const WorkOrder = () => {
             ) : (
                     currentWorkorders.map((workorder) => (
                       <tr key={workorder._id} className={"border-b border-gray-100 hover:bg-gray-50 odd:bg-white even:bg-gray-100"}>
-                        <td className="px-2 py-2 font-medium text-blue-600 text-center">{workorder.woNumber}</td>
+                        <td className="px-2 py-2 font-medium text-blue-600 text-center">
+                          <button type="button" className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer" onClick={() => handleWorkorderNoClick(workorder)}>
+                            {workorder.woNumber}
+                          </button>
+                        </td>
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.clientName}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.clientNickName}</td>
-                        <td className="px-2 py-2 text-gray-600 text-center">{getCompanyName(workorder.company)}</td>
+                        <td className="px-2 py-2 font-medium text-gray-600 text-center">{getCompanyName(workorder.company)}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.projectName}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.woDate ? workorder.woDate.slice(0, 10) : ""}</td>
                         <td className="px-2 py-2 text-gray-700 text-center">{workorder.woValidityDate ? workorder.woValidityDate.slice(0, 10) : ""}</td>
@@ -658,6 +709,68 @@ const WorkOrder = () => {
             </div>
           </div>
         </div>
+
+        {/* BOQ Modal */}
+        {showBoqsModel && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 modal-backdrop">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-blue-800">
+                  BOQs for {selectedWorkorder?.woNumber}
+                </h2>
+                <button
+                  onClick={() => setShowBoqsModel(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <FaTimes size={24} />
+                </button>
+              </div>
+
+              {workordersLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                  <p className="mt-2">Loading BOQs...</p>
+                </div>
+              ) : workordersError ? (
+                <div className="text-red-600 text-center py-8">{workordersError}</div>
+              ) : workorderBoqs.length === 0 ? (
+                <div className="text-gray-600 text-center py-8">No BOQs found for this workorder.</div>
+              ) : (
+                <table className="w-full text-sm text-center">
+                  <thead className="bg-gray-200 border-b border-gray-200">
+                    <tr>
+                      <th className="px-2 py-3 min-w-[100px] text-center">BOQ No.</th>
+                      <th className="px-2 py-3 min-w-[120px] text-center">Workorder No.</th>
+                      <th className="px-2 py-3 min-w-[200px] text-center">Description</th>
+                      <th className="px-2 py-3 min-w-[80px] text-center">Unit</th>
+                      <th className="px-2 py-3 min-w-[80px] text-center">Quantity</th>
+                      <th className="px-2 py-3 min-w-[80px] text-center">Rate</th>
+                      <th className="px-2 py-3 min-w-[80px] text-center">Amount</th>
+                      <th className="px-2 py-3 min-w-[120px] text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {workorderBoqs.map((boq) => (
+                      <tr key={boq._id} className={"border-b border-gray-100 hover:bg-gray-50 odd:bg-white even:bg-gray-100"}>
+                        <td className="px-2 py-2 font-medium text-blue-600 text-center">{boq.boqNumber}</td>
+                        <td className="px-2 py-2 font-medium text-gray-700 text-center">{boq.workorder.woNumber}</td>
+                        <td className="px-2 py-2 text-gray-700 text-justify">{boq.boqItemsDesc}</td>
+                        <td className="px-2 py-2 text-gray-700 text-center">{boq.boqUnit}</td>
+                        <td className="px-2 py-2 text-gray-700 text-center">{boq.boqQuantity}</td>
+                        <td className="px-2 py-2 text-gray-700 text-center">{boq.boqRate}</td>
+                        <td className="px-2 py-2 text-gray-700 text-center">{boq.boqAmount}</td>
+                        <td className="px-2 py-2 flex justify-center gap-2">
+                          <button onClick={() => handleEditBoq(boq._id, boq.workorder._id)} className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors" title="Edit"><FaEdit size={16} /></button>
+                          <button onClick={() => handleDeleteBoq(boq._id)} className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors" title="Delete"><FaTrash size={16} /></button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

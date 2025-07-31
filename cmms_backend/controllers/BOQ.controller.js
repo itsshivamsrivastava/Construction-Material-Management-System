@@ -73,7 +73,6 @@ const getBOQByWorkorder = async (req, res) => {
         for (let boq of boqs) {
             await boq.populate('workorder');
         }
-        console.log("BOQs after population:", boqs);
         res.status(200).json(boqs);
     } catch (error) {
         res.status(400).json({ message: error.message });
