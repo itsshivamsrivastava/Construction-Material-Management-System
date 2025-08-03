@@ -18,7 +18,7 @@ const Sidebar = ({title}) => {
     { name: "BOQ", icon: <CiMoneyBill />, path: "/manage-boq"},
     { name: "Contractor Bills", icon: <RiBillLine />, path: "/contractor-bills" },
     { name: "Materials", icon: <MdOutlineConstruction />, path: "/manage-materials" },
-    { name: "PO Consumables", icon: <BiSolidPurchaseTagAlt />, path: "/po-consumables" },
+    { name: "PO Consumables", icon: <BiSolidPurchaseTagAlt />, path: "/poconsumables" },
     { name: "Purchase Orders", icon: <BiPurchaseTagAlt />, path: "/purchase-orders" },
     { name: "RA Bill Entry", icon: <CiMoneyBill />, path: "/ra-bills" },
   ];

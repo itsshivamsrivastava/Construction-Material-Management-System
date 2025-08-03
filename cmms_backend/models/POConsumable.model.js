@@ -1,13 +1,17 @@
 import mongoose from "mongoose";
 
 const POConsumableSchema = new mongoose.Schema({
-  company: { type: mongoose.Schema.Types.ObjectId, ref: "Company" },
+  company: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Company" 
+  },
   supplierDetails: {
     type: String,
     required: true,
   },
   projectName: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "WorkOrder",
     required: true,
   },
   poNumber: {
@@ -19,7 +23,8 @@ const POConsumableSchema = new mongoose.Schema({
     required: true,
   },
   materialName: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Material",
     required: true,
   },
   unit: {

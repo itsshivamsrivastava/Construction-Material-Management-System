@@ -55,7 +55,7 @@ const Dashboard = () => {
     {
       title: 'PO Consumables',
       icon: <FaShoppingCart />,
-      path: '/po-consumables',
+      path: '/poconsumables',
       description: 'Manage purchase order consumables'
     },
     {

@@ -10,6 +10,7 @@ import ContractorBills from "./Components/ContractorBills/ContractorBills";
 import ManageBOQ from "./Components/Boq/ManageBOQ";
 import WorkOrder from "./Components/Workorder/Workorder";
 import ManageMaterials from "./Components/Materials/ManageMaterials";
+import PoConsumables from "./Components/PoConsumables/PoConsumables";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -97,6 +98,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ManageMaterials />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/poconsumables"
+          element={
+            <ProtectedRoute>
+              <PoConsumables />
             </ProtectedRoute>
           }
         />

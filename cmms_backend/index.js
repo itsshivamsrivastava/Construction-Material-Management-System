@@ -8,6 +8,7 @@ import { workOrderRouter } from './routes/workorder.route.js';
 import { ContractorBillrouter } from './routes/contractorBill.route.js';
 import { boqRouter } from './routes/boq.route.js';
 import { materialRouter } from './routes/material.route.js';
+import { poConsumableRouter } from './routes/PoConsumables.route.js';
 
 dotenv.config();
 
@@ -33,3 +34,4 @@ app.use('/api/workorder', workOrderRouter);
 app.use('/api/contractorBill', ContractorBillrouter);
 app.use('/api/boq', boqRouter);
 app.use('/api/material', materialRouter);
+app.use('/api/poConsumable', poConsumableRouter);
