@@ -5,8 +5,15 @@ const RABillEntrySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  workOrder: { type: mongoose.Schema.Types.ObjectId, ref: "WorkOrder" },
-  raBillNumber: { type: String, unique: true },
+  workOrder: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "WorkOrder"
+  },
+  raBillNumber: { 
+    type: String, 
+    unique: true,
+    required: true,
+  },
   raBillDate: {
     type: Date,
     required: true,
@@ -24,7 +31,10 @@ const RABillEntrySchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  boqItem: { type: mongoose.Schema.Types.ObjectId, ref: "BOQItem" },
+  boqItem: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "BOQItem" 
+  },
   rate: {
     type: Number,
     required: true,

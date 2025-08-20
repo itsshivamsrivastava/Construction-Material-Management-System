@@ -11,6 +11,8 @@ import ManageBOQ from "./Components/Boq/ManageBOQ";
 import WorkOrder from "./Components/Workorder/Workorder";
 import ManageMaterials from "./Components/Materials/ManageMaterials";
 import PoConsumables from "./Components/PoConsumables/PoConsumables";
+import RABill from "./Components/RABIll/RABill";
+import PurchaseOrder from "./Components/PurchaseOrder/PurchaseOrder";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -109,6 +111,25 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route 
+        path="/purchase-orders"
+        element={
+          <ProtectedRoute>
+            <PurchaseOrder />
+          </ProtectedRoute>
+        }
+        />
+
+        <Route 
+        path="/ra-bills"
+        element={
+          <ProtectedRoute>
+            <RABill />
+          </ProtectedRoute>
+        }
+        />
+
 
         {/* <Footer /> */}
       </Routes>

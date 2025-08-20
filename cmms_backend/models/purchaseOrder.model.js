@@ -10,7 +10,8 @@ const PurchaseOrderSchema = new mongoose.Schema({
     required: true,
   },
   projectName: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "WorkOrder",
     required: true,
   },
   poNumber: {
@@ -21,7 +22,7 @@ const PurchaseOrderSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  material: {
+  materialName: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Material",
   },
