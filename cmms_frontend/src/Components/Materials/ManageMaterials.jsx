@@ -447,7 +447,7 @@ const ManageMaterials = () => {
               <table className="w-full text-sm text-left">
                 <thead className="bg-gray-200 border-b border-gray-200">
                   <tr>
-                    <th className="px-2 py-3 min-w-[140px] text-center">
+                    <th className="px-7 py-3 min-w-[165px] text-center">
                       <button
                         onClick={() => handleSort("materialName")}
                         className="flex items-center gap-1 hover:text-blue-600"

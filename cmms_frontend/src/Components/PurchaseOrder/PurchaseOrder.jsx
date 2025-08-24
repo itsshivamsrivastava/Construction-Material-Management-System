@@ -561,7 +561,7 @@ const PurchaseOrder = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      CGST
+                      CGST *
                     </label>
                     <input
                       type="number"
@@ -574,7 +574,7 @@ const PurchaseOrder = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      SGST
+                      SGST *
                     </label>
                     <input
                       type="number"
@@ -587,7 +587,7 @@ const PurchaseOrder = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      IGST
+                      IGST *
                     </label>
                     <input
                       type="number"
@@ -600,7 +600,7 @@ const PurchaseOrder = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Other Charges
+                      Other Charges *
                     </label>
                     <input
                       type="number"
@@ -614,7 +614,7 @@ const PurchaseOrder = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Total Amount
+                      Total Amount *
                     </label>
                     <input
                       type="number"
