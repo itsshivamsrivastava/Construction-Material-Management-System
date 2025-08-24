@@ -61,6 +61,7 @@ const PurchaseOrder = () => {
   const [companyOptions, setCompanyOptions] = useState([]);
   const [workordersOptions, setWorkordersOptions] = useState([]);
   const [materialOptions, setMaterialOptions] = useState([]);
+  const [qtyError, setQtyError] = useState("");
 
   const navigate = useNavigate();
 
@@ -151,18 +152,37 @@ const PurchaseOrder = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    // Material qty validation
+    if (name === "qtyToOrder") {
+      const selectedMaterial = materialOptions.find(
+        (m) => m._id === formData.materialName
+      );
+      if (selectedMaterial && Number(value) > selectedMaterial.totalQuantity) {
+        setQtyError(
+          `Quantity cannot exceed available stock (${selectedMaterial.totalQuantity})`
+        );
+      } else {
+        setQtyError("");
+      }
+    }
+
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
       taxDetails: {
         ...prevData.taxDetails,
         [name]: value,
-      }
+      },
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (qtyError) {
+      setError(qtyError);
+      return;
+    }
     setLoading(true);
     setError("");
     setSuccess("");
@@ -479,6 +499,9 @@ const PurchaseOrder = () => {
                       required
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+                    {qtyError && (
+                      <p className="text-red-500 text-sm mt-1">{qtyError}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
